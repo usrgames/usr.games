@@ -153,7 +153,9 @@ func TestCloudflareServesTheSiteFolderWithItsNotFoundPage(t *testing.T) {
 			Directory string `json:"directory"`
 			NotFound  string `json:"not_found_handling"`
 		} `json:"assets"`
-		Previews map[string]any `json:"previews"`
+		Previews    map[string]any `json:"previews"`
+		WorkersDev  *bool          `json:"workers_dev"`
+		PreviewURLs *bool          `json:"preview_urls"`
 	}
 	if err := json.Unmarshal([]byte(read(t, "wrangler.jsonc")), &cfg); err != nil {
 		t.Fatalf("wanted wrangler.jsonc to be plain JSON, got %v", err)
@@ -166,6 +168,14 @@ func TestCloudflareServesTheSiteFolderWithItsNotFoundPage(t *testing.T) {
 	}
 	if cfg.Previews == nil {
 		t.Errorf(`wanted a "previews" block (it may be empty), without which Cloudflare's builds of pull request branches fail`)
+	}
+	// With no domain attached, Cloudflare would serve the Worker at an address of its own, under
+	// the account's name: the site would be public before it opens. Previews are a separate switch.
+	if cfg.WorkersDev == nil || *cfg.WorkersDev {
+		t.Errorf(`wanted "workers_dev": false, so the site has no address until its domain is attached`)
+	}
+	if cfg.PreviewURLs == nil || !*cfg.PreviewURLs {
+		t.Errorf(`wanted "preview_urls": true, so each pull request still gets a preview`)
 	}
 	if cfg.Assets.NotFound != "404-page" {
 		t.Errorf(`wanted not_found_handling "404-page", so unknown paths get 404.html, got %q`, cfg.Assets.NotFound)
