@@ -74,6 +74,8 @@ ul.cols { padding: 0; margin-bottom: 0; list-style: none; }
 .page { margin-top: 30px; display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: clamp(20px, 3.4vw, 44px); align-items: start; }
 .page .att { padding: 20px 22px 22px; }
 .side, .doc { display: flex; flex-direction: column; gap: 22px; }
+.doc article { display: flex; flex-direction: column; gap: 8px; }
+.doc article + article { margin-top: 12px; padding-top: 22px; border-top: 2px dashed #2fd16a66; }
 .title img { height: 40px; width: auto; }
 .about { margin-top: 10px; }
 .keys { display: grid; grid-template-columns: 13ch minmax(0, 1fr); gap: 0 1ch; }

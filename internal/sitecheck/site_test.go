@@ -5,6 +5,7 @@ package sitecheck
 
 import (
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"io/fs"
 	"os"
@@ -13,9 +14,11 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/usrgames/usr.games/internal/brand"
 	"github.com/usrgames/usr.games/internal/games"
+	"github.com/usrgames/usr.games/internal/plan"
 )
 
 var site = filepath.Join("..", "..", "site")
@@ -75,7 +78,7 @@ func metas(page, name string) []string {
 
 // The tests below go over every page that is found. This one fails if a page was not.
 func TestTheSiteHasItsPages(t *testing.T) {
-	want := []string{"index.html", "404.html", "terminals.html"}
+	want := []string{"index.html", "404.html", "terminals.html", "plan.html"}
 	for _, m := range games.Modules(list(t)) {
 		want = append(want, m+".html")
 	}
@@ -363,6 +366,83 @@ func TestLocalLinksNameFilesOfTheSite(t *testing.T) {
 				t.Errorf("%s: wanted the id %q once", name, m[1])
 			}
 			seen[m[1]] = true
+		}
+	}
+}
+
+// Nothing shows a mistake in a feed: a reader that cannot parse it just goes quiet. So the feed
+// is held to the notes in plan/: one entry each, newest first, each leading to its note on the
+// page.
+func TestTheFeedHoldsEveryNoteAndIsWellFormed(t *testing.T) {
+	var feed struct {
+		XMLName xml.Name `xml:"http://www.w3.org/2005/Atom feed"`
+		Title   string   `xml:"title"`
+		ID      string   `xml:"id"`
+		Updated string   `xml:"updated"`
+		Author  string   `xml:"author>name"`
+		Links   []struct {
+			Rel  string `xml:"rel,attr"`
+			Href string `xml:"href,attr"`
+		} `xml:"link"`
+		Entries []struct {
+			Title   string `xml:"title"`
+			ID      string `xml:"id"`
+			Updated string `xml:"updated"`
+			Link    struct {
+				Href string `xml:"href,attr"`
+			} `xml:"link"`
+			Content string `xml:"content"`
+		} `xml:"entry"`
+	}
+	if err := xml.Unmarshal([]byte(read(t, "site", "plan.xml")), &feed); err != nil {
+		t.Fatalf("plan.xml: wanted an Atom feed, got %v", err)
+	}
+	notes, err := plan.Load(filepath.Join("..", "..", "plan"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Atom asks for all four of a feed.
+	if feed.Title == "" || feed.ID == "" || feed.Author == "" || len(feed.Entries) == 0 {
+		t.Fatalf("plan.xml: wanted a title, an id, an author and entries, got %q, %q, %q and %d entries", feed.Title, feed.ID, feed.Author, len(feed.Entries))
+	}
+	self := false
+	for _, l := range feed.Links {
+		self = self || (l.Rel == "self" && l.Href == "https://usr.games/plan.xml")
+	}
+	if !self {
+		t.Errorf("plan.xml: wanted a link to itself at https://usr.games/plan.xml, got %+v", feed.Links)
+	}
+	if len(feed.Entries) != len(notes) {
+		t.Fatalf("plan.xml: wanted one entry for each of the %d notes, got %d", len(notes), len(feed.Entries))
+	}
+	page := read(t, "site", "plan.html")
+	for i, e := range feed.Entries {
+		n := notes[i]
+		at := "https://usr.games/plan#" + n.ID
+		if e.Title != n.Title || e.ID != at || e.Link.Href != at {
+			t.Errorf("plan.xml: entry %d: wanted %q at %s, got %q with id %s and link %s", i+1, n.Title, at, e.Title, e.ID, e.Link.Href)
+		}
+		if !strings.Contains(page, `id="`+n.ID+`"`) {
+			t.Errorf("plan.html: wanted the note %s under its own id, where the feed sends a reader", n.ID)
+		}
+		if when, err := time.Parse(time.RFC3339, e.Updated); err != nil || !when.Equal(n.Date) {
+			t.Errorf("plan.xml: entry %d: wanted the time %s, got %q", i+1, n.Date.Format(time.RFC3339), e.Updated)
+		}
+		if strings.TrimSpace(e.Content) == "" {
+			t.Errorf("plan.xml: entry %d: wanted the note's text", i+1)
+		}
+	}
+	if feed.Updated != feed.Entries[0].Updated {
+		t.Errorf("plan.xml: wanted the feed as old as its newest note, %s, got %s", feed.Entries[0].Updated, feed.Updated)
+	}
+}
+
+// A feed reader, given any address of the site, finds the feed from the page's head.
+func TestEveryPageNamesTheFeed(t *testing.T) {
+	const want = `<link rel="alternate" type="application/atom+xml" title="usr.games: the plan" href="/plan.xml">`
+	for _, name := range pages {
+		if head, _, _ := strings.Cut(read(t, "site", name), "</head>"); !strings.Contains(head, want) {
+			t.Errorf("%s: wanted the feed named in the head: %s", name, want)
 		}
 	}
 }
