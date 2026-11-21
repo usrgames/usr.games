@@ -30,7 +30,7 @@ One colour, and the four voices a terminal gives it.
 | Dim | `#2fd16a` | What can be read second: prompts, notes, captions. |
 | Reversed | glass on plain | What is yours, and what you can press. |
 
-A blink asks for a key. Nothing else moves by itself.
+A blink asks for a key: four blinks, then it holds still. Nothing else moves by itself.
 
 Every voice is readable on the glass at 4.5 to 1 or better; a test holds that.
 

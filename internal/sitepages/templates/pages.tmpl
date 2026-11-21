@@ -1,0 +1,104 @@
+{{define "index"}}{{template "head" .}}<main id="main">
+<p class="pitch hot">An arcade in your terminal. Free play.</p>
+<div class="floor">
+  <div class="list">
+    <p class="cmd"><span class="dim">$</span> ls -l /usr/games</p>
+{{range .Games}}    <a class="row" href="/{{.Name}}"><span class="perm" aria-hidden="true">-rwxr-xr-x</span><span class="own" aria-hidden="true">root</span><span class="grp" aria-hidden="true">games</span><span>{{.Players}}</span><span>{{.Name}}(6)</span></a>
+{{end}}    <p class="hint dim">{{.Count}} Up and down to choose, return to play.<span class="cursor blink"></span></p>
+  </div>
+  <div class="preview">
+{{range $i, $g := .Games}}    <div class="att"{{if $i}} hidden{{end}}>
+      <img class="pic" src="/media/{{$g.Name}}/sketch.svg" alt="{{$g.Picture}}" width="660" height="340">
+      <img class="name" src="/media/{{$g.Name}}/name.svg" alt="{{$g.Name}}(6)" width="{{namew $g.Name 3}}" height="80">
+      <p class="dim">{{$g.Blurb}}</p>
+      <p><a class="rev" href="/{{$g.Name}}">&nbsp;Play&nbsp;</a> <span class="blink">or press return</span></p>
+    </div>
+{{end}}  </div>
+  <div class="homecol">
+    <section>
+      <h2>Play it here, or take it home.</h2>
+      <p><span class="dim">$</span> curl -fsSL https://usr.games/install.sh | sh</p>
+      <p><span class="dim">$</span> tty1</p>
+      <p class="dim note"><a href="/tty1">tty1</a> is the launcher. It installs the games, keeps them current, and starts them.</p>
+    </section>
+    <section>
+      <h2>Bring a good terminal.</h2>
+      <p class="dim">Best in Ghostty, kitty, WezTerm, foot or iTerm2. Apple's Terminal works, with one key held at a time.</p>
+    </section>
+  </div>
+</div>
+</main>
+{{template "foot" .}}{{end}}
+
+{{define "game"}}{{template "head" .}}<nav class="names" aria-label="The games">
+  <p class="dim">$ ls /usr/games</p>
+  {{template "games" .}}
+</nav>
+<main id="main" class="page">
+  <div class="att"><img class="pic" src="/media/{{.Game.Name}}/sketch.svg" alt="{{.Game.Picture}}" width="660" height="340"></div>
+  <div class="side">
+    <div>
+      <h1 class="title"><img src="/media/{{.Game.Name}}/name.svg" alt="{{.Game.Name}}(6)" width="{{namew .Game.Name 3}}" height="80"></h1>
+      <p class="about">{{.Game.About}}</p>
+      <p class="dim">{{.Game.Facts}}</p>
+    </div>
+    <section>
+      <h2>Keys</h2>
+      <dl class="keys">{{range .Game.Keys}}<dt>{{index . 0}}</dt><dd class="dim">{{index . 1}}</dd>{{end}}</dl>
+    </section>
+    <section>
+      <h2>Take it home</h2>
+      <p><span class="dim">$</span> tty1 install {{.Game.Name}}</p>
+      <p><span class="dim">$</span> go install usr.games/{{.Game.Name}}@latest</p>
+      <p><span class="dim">$</span> man {{.Game.Name}}</p>
+    </section>
+{{if .Others}}    <section>
+      <h2>See also</h2>
+      <p>{{range $i, $g := .Others}}{{if $i}}, {{end}}<a href="/{{$g.Name}}">{{$g.Name}}(6)</a>{{end}}</p>
+    </section>
+{{end}}  </div>
+</main>
+{{template "foot" .}}{{end}}
+
+{{define "tty1"}}{{template "head" .}}<main id="main" class="doc">
+  <div>
+    <h1 class="title"><img src="/media/tty1/name.svg" alt="tty1" width="{{namew "tty1" 0}}" height="80"></h1>
+    <p class="about">tty1 is the launcher: one command that installs the games, keeps them current, and starts them.</p>
+  </div>
+  <section>
+    <h2>Get it</h2>
+    <p><span class="dim">$</span> curl -fsSL https://usr.games/install.sh | sh</p>
+    <p><span class="dim">$</span> go install usr.games/tty1@latest</p>
+  </section>
+  <section>
+    <h2>Use it</h2>
+    <dl class="keys wide"><dt>tty1 ls</dt><dd class="dim">list the games</dd><dt>tty1 install {{.Example}}</dt><dd class="dim">bring a game home</dd><dt>tty1 update</dt><dd class="dim">bring everything up to date</dd><dt>tty1 run {{.Example}}</dt><dd class="dim">start a game</dd><dt>tty1 man {{.Example}}</dt><dd class="dim">read a game's manual page</dd><dt>tty1 doctor</dt><dd class="dim">check your terminal, and say what a better one would give you</dd></dl>
+  </section>
+</main>
+{{template "foot" .}}{{end}}
+
+{{define "arcade"}}{{template "head" .}}<main id="main" class="doc">
+  <div>
+    <h1 class="title"><img src="/media/arcade/name.svg" alt="arcade" width="{{namew "arcade" 0}}" height="80"></h1>
+    <p class="about">The arcade is the studio's own server: the part of usr.games that lets two terminals play each other.</p>
+  </div>
+  <section>
+    <h2>What it does today</h2>
+    <p>It passes the moves of an online breakshot match between its two players, and keeps nothing once the match is over.</p>
+  </section>
+  <section>
+    <h2>What comes next</h2>
+    <p class="dim">More is coming. Before each new part opens, this page will say what it keeps.</p>
+  </section>
+</main>
+{{template "foot" .}}{{end}}
+
+{{define "404"}}{{template "head" .}}<main id="main" class="doc">
+  <h1 class="hot">No such file or directory.</h1>
+  <div>
+    <p><span class="dim">$</span> ls /usr/games</p>
+    {{template "games" .}}
+  </div>
+  <p class="dim">Nothing lives at this address. <a href="/">Back to the front page</a>.</p>
+</main>
+{{template "foot" .}}{{end}}

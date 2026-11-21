@@ -1,0 +1,96 @@
+/* usr.games: one green tube. BRAND.md owns the colours and the type named here, and tests hold
+   this file to it. Nothing is loaded from another site. */
+@font-face { font-family: "VT323"; src: url("/media/fonts/VT323-Regular.ttf") format("truetype"); font-display: block; }
+
+:root {
+  --glass: #030a05;
+  --p: #45ff86;
+  --hot: #d6ffe4;
+  --dim: #2fd16a;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { background: var(--glass); }
+body {
+  margin: 0; min-height: 100vh; color: var(--p);
+  font: 23px/1.3 "VT323", ui-monospace, Menlo, monospace; text-shadow: 0 0 9px #45ff8699;
+  background: radial-gradient(120% 600px at 50% 240px, #07180d 0%, var(--glass) 80%) no-repeat var(--glass);
+}
+/* Scan lines over the whole screen. They sit above the page and take no clicks. */
+body::after { content: ""; position: fixed; inset: 0; pointer-events: none; background: repeating-linear-gradient(to bottom, #0000 0 2px, #00000038 2px 3px); }
+
+p, h1, h2, dl, dd { margin: 0; }
+h1, h2 { font: inherit; }
+h2 { margin-bottom: 6px; color: var(--hot); text-shadow: 0 0 10px #d6ffe4aa; }
+a { color: inherit; text-underline-offset: 4px; }
+a:focus-visible { outline: 2px dashed var(--hot); outline-offset: 3px; }
+img { display: block; max-width: 100%; height: auto; }
+.sign img, .title img, .att .pic, .att .name { filter: drop-shadow(0 0 5px #45ff86aa); }
+
+/* The four voices of the one colour, and the blink that asks for a key. */
+.hot { color: var(--hot); text-shadow: 0 0 10px #d6ffe4aa; }
+.dim { color: var(--dim); }
+.rev { background: var(--p); color: var(--glass); text-shadow: none; box-shadow: 0 0 12px #45ff8688; text-decoration: none; }
+/* Four blinks and then still: blinking that runs on needs a way to stop it. A screen that
+   comes into view blinks afresh. */
+.blink { animation: blink 1.1s steps(1) 4; }
+@keyframes blink { 50% { opacity: 0; } }
+.cursor { display: inline-block; width: .55em; height: .9em; margin-left: .4ch; background: var(--p); vertical-align: -0.08em; box-shadow: 0 0 9px var(--p); }
+
+.skip { position: absolute; left: -999px; }
+.skip:focus { left: 16px; top: 12px; z-index: 1; padding: 0 8px; background: var(--p); color: var(--glass); text-shadow: none; }
+.tube { max-width: 1200px; margin: 0 auto; padding: 40px clamp(20px, 4vw, 52px) 36px; }
+
+.mast .sign { display: block; width: fit-content; }
+.mast .sign img { height: 30px; width: auto; }
+.mast .sign.big img { height: clamp(34px, 5.2vw, 60px); }
+.pitch { margin-top: 14px; font-size: 30px; line-height: 1.1; }
+
+/* The front page: the listing is the menu, and one screen beside it shows the game you are on.
+   The screen stays in view while a long listing scrolls past it. */
+.floor { margin-top: 34px; display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); grid-template-areas: "list screen" "home screen"; gap: 34px clamp(20px, 3.4vw, 44px); align-items: start; }
+.list { grid-area: list; }
+.preview { grid-area: screen; position: sticky; top: 16px; }
+.cmd { margin-bottom: 4px; }
+.row { display: grid; grid-template-columns: 11ch 5ch 6ch 7ch minmax(0, 1fr); gap: 0 1ch; padding: 2px 8px; text-decoration: none; }
+.row:hover, .row:focus-visible, .row.on { background: var(--p); color: var(--glass); text-shadow: none; box-shadow: 0 0 12px #45ff8688; }
+.hint { margin-top: 10px; }
+.homecol { grid-area: home; display: flex; flex-direction: column; gap: 22px; }
+.note { margin-top: 8px; }
+
+/* An attract screen. A display rule would undo the hidden attribute, so it is restated. */
+.att { display: flex; flex-direction: column; gap: 10px; padding: 14px 16px 16px; border: 2px solid var(--p); border-radius: 18px; box-shadow: 0 0 12px #45ff8655, inset 0 0 22px #45ff8622; }
+.att[hidden] { display: none; }
+.att .pic { width: 100%; }
+.att .name { height: 26px; width: auto; align-self: flex-start; }
+
+/* A game's page. */
+.names { margin-top: 14px; }
+.names .cols, .doc .cols { margin-top: 6px; columns: 15ch auto; column-gap: 2ch; }
+.cols a { display: block; padding: 0 6px; break-inside: avoid; text-decoration: none; }
+.cols a:hover { text-decoration: underline; }
+.page { margin-top: 30px; display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: clamp(20px, 3.4vw, 44px); align-items: start; }
+.page .att { padding: 20px 22px 22px; }
+.side, .doc { display: flex; flex-direction: column; gap: 22px; }
+.title img { height: 40px; width: auto; }
+.about { margin-top: 10px; }
+.keys { display: grid; grid-template-columns: 13ch minmax(0, 1fr); gap: 0 1ch; }
+.keys.wide { grid-template-columns: 24ch minmax(0, 1fr); }
+.doc { margin-top: 30px; max-width: 64ch; }
+
+.foot { margin-top: 44px; padding-top: 18px; border-top: 2px dashed #2fd16a66; }
+.foot .ls { display: flex; flex-wrap: wrap; gap: 0 3ch; }
+.foot .ls + p { margin-top: 12px; }
+
+@media (prefers-reduced-motion: reduce) { .blink { animation: none; } }
+@media (max-width: 820px) {
+  .floor, .page { grid-template-columns: minmax(0, 1fr); }
+  /* On a phone the screen sits right under the listing it answers to. */
+  .floor { grid-template-areas: "list" "screen" "home"; }
+  .preview { position: static; }
+  .row { grid-template-columns: 7ch minmax(0, 1fr); }
+  .row .perm, .row .own, .row .grp { display: none; }
+  .keys.wide { grid-template-columns: minmax(0, 1fr); }
+  .keys.wide dd { margin-bottom: 8px; }
+}
