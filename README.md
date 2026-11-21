@@ -23,6 +23,14 @@ make check   # format, tests, vet: fails if a made file has drifted
 
 To add a game: add its entry to `games.json`, add a sketch to `internal/brand/sketch.go` until its recording exists, run `make site`, and commit what it wrote.
 
+## Deploys
+
+Cloudflare builds the site from this repository.
+
+- **A pull request gets a preview.** Cloudflare comments on it with the address.
+- **A merge to `main` deploys.** Until usr.games is attached, that deployment has no address: `wrangler.jsonc` turns the Worker's own address off, and a test holds it off.
+- **From opening day, a merge to `main` is a publication.**
+
 ## How `go install usr.games/<name>` finds its code
 
 Every page, the not-found page included, carries one `go-import` tag for each module, so whichever address the `go` command asks, it reads where the code lives. A game's page is a flat file (`site/rustwake.html`), so that `usr.games/rustwake?go-get=1` answers with the page itself and not with a redirect.
