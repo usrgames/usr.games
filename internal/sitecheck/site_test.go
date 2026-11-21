@@ -78,7 +78,7 @@ func metas(page, name string) []string {
 
 // The tests below go over every page that is found. This one fails if a page was not.
 func TestTheSiteHasItsPages(t *testing.T) {
-	want := []string{"index.html", "404.html", "terminals.html", "plan.html"}
+	want := []string{"index.html", "404.html", "terminals.html", "plan.html", "privacy.html", "terms.html"}
 	for _, m := range games.Modules(list(t)) {
 		want = append(want, m+".html")
 	}
@@ -185,6 +185,12 @@ func TestCloudflareServesTheSiteFolderWithItsNotFoundPage(t *testing.T) {
 	}
 }
 
+// contact is the one address the site gives, and fenced is how a page must write it.
+const (
+	contact = "hello@usr.games"
+	fenced  = "<!--email_off-->" + contact + "<!--/email_off-->"
+)
+
 func TestPagesAreSelfContainedAndPlain(t *testing.T) {
 	email := regexp.MustCompile(`[\w.+-]+@[\w-]+\.[\w.-]+`)
 	for _, name := range pages {
@@ -204,9 +210,10 @@ func TestPagesAreSelfContainedAndPlain(t *testing.T) {
 		if strings.Contains(page, "ZgotmplZ") {
 			t.Errorf("%s: a value was refused by the template and is missing from the page", name)
 		}
-		// Cloudflare rewrites email addresses it finds in a page.
-		if m := email.FindString(page); m != "" {
-			t.Errorf("%s: wanted no email address, found %q", name, m)
+		// Cloudflare rewrites an email address it finds in a page into a script that prints it.
+		// The notices' contact is fenced by the two comments that tell it not to.
+		if m := email.FindString(strings.ReplaceAll(page, fenced, "")); m != "" {
+			t.Errorf("%s: wanted no email address but the fenced contact, found %q", name, m)
 		}
 	}
 }
@@ -272,9 +279,48 @@ func TestTheLinkPreviewNamesAFileOfTheSite(t *testing.T) {
 	}
 }
 
+// The notices say who runs the site and where to write, and security.txt says where to report
+// a hole. A file whose date has passed tells a researcher nobody is listening, so this fails a
+// month before it does: move Expires on, by less than a year, and it passes again.
+func TestTheNoticesAndSecurityTxtGiveTheContact(t *testing.T) {
+	for _, name := range []string{"privacy.html", "terms.html"} {
+		page := read(t, "site", name)
+		if strings.Count(page, fenced) != 1 || !strings.Contains(page, "operated by KOHANTIC LLC") {
+			t.Errorf("%s: wanted the operator named and the contact once, as %s", name, fenced)
+		}
+	}
+	fields := map[string]string{}
+	for _, line := range strings.Split(strings.TrimSpace(read(t, "site", ".well-known", "security.txt")), "\n") {
+		key, value, ok := strings.Cut(line, ": ")
+		if !ok || fields[key] != "" {
+			t.Fatalf("security.txt: wanted one \"Field: value\" a line, each field once, got %q", line)
+		}
+		fields[key] = value
+	}
+	if got := fields["Contact"]; got != "mailto:"+contact {
+		t.Errorf("security.txt: wanted Contact: mailto:%s, got %q", contact, got)
+	}
+	if got := fields["Canonical"]; got != "https://usr.games/.well-known/security.txt" {
+		t.Errorf("security.txt: wanted Canonical to be its own address, got %q", got)
+	}
+	expires, err := time.Parse(time.RFC3339, fields["Expires"])
+	if err != nil {
+		t.Fatalf("security.txt: wanted Expires as a time like 2027-10-21T00:00:00Z, got %q", fields["Expires"])
+	}
+	switch left := time.Until(expires); {
+	case left < 30*24*time.Hour:
+		t.Errorf("security.txt: it expires on %s: move Expires on, by less than a year", expires.Format(time.DateOnly))
+	case left > 366*24*time.Hour:
+		t.Errorf("security.txt: wanted an expiry less than a year away, got %s", expires.Format(time.DateOnly))
+	}
+}
+
 // The pages ask no other site for anything: the typeface, the stylesheet, the script and the
 // pictures are files of the site. What a page loads is what its link tags, its pictures and its
-// stylesheet name; a link to follow is not loaded.
+// stylesheet name; a link to follow is not loaded. One thing is added that no file here names:
+// on usr.games Cloudflare puts its Web Analytics script into each page at the edge, to count
+// visits. That was decided on 2026-11-21, as on glonk.dev, and the privacy notice says so.
+// Previews and this test do not see it.
 func TestNothingIsLoadedFromAnotherSite(t *testing.T) {
 	local := func(target string) bool {
 		return strings.HasPrefix(target, "/") && !strings.HasPrefix(target, "//")
@@ -499,7 +545,7 @@ func TestTheFrontPagesTerminalsAreOnTheTerminalsPage(t *testing.T) {
 func TestTheSiteNamesItsOperatorAndNoPerson(t *testing.T) {
 	person := regexp.MustCompile(`(?i)kyro|\bkohan\b`)
 	err := filepath.WalkDir(site, func(path string, d fs.DirEntry, err error) error {
-		if err != nil || d.IsDir() || !slices.Contains([]string{".html", ".css", ".js", ".json", ".svg"}, filepath.Ext(path)) {
+		if err != nil || d.IsDir() || !slices.Contains([]string{".html", ".css", ".js", ".json", ".svg", ".xml", ".txt"}, filepath.Ext(path)) {
 			return err
 		}
 		data, err := os.ReadFile(path)

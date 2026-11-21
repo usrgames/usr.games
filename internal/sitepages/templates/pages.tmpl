@@ -141,6 +141,71 @@
 {{end}}</main>
 {{template "foot" .}}{{end}}
 
+{{define "privacy"}}{{template "head" .}}<main id="main" class="doc">
+  <div>
+    <h1 class="hot">What we keep.</h1>
+    <p class="about">Almost nothing. There are no accounts here, no cookies and no ads.</p>
+  </div>
+  <section>
+    <h2>On these pages</h2>
+    <p>These pages set no cookies and keep nothing in your browser. Cloudflare serves them, and sees each request the way any host does: your address, your browser and the page you asked for.</p>
+    <p>We count visits with Cloudflare Web Analytics. Cloudflare adds one small script to each page for it. It tells us how many people came, which pages they opened, which site sent them, their country, what kind of browser and device they used, and how fast the page loaded. It uses no cookies, and Cloudflare says it does not fingerprint anyone.</p>
+  </section>
+  <section>
+    <h2>In a match over the net</h2>
+    <p>When two people play over the net, their games talk through our relay. It holds a match in memory while it is played: a room, two seats, and the moves on their way from one seat to the other. A move is dropped once it is delivered. A seat that goes quiet for 45 seconds is cleared, and a room nobody joins ends after 10 minutes.</p>
+    <p>The relay asks for no name, writes nothing to disk and keeps no log of who played. DigitalOcean hosts it, and sees the addresses that connect to it.</p>
+    <p class="dim note">Outside a match over the net, the games make no network connections at all.</p>
+  </section>
+  <section>
+    <h2>Taking a game home</h2>
+    <p>Installing a game downloads it from GitHub, or through Go's module proxy, which Google runs. Those requests go to them, under their own policies.</p>
+  </section>
+  <section>
+    <h2>Who runs this</h2>
+    <p>usr.games is operated by KOHANTIC LLC. Questions about anything on this page: {{.Contact}}</p>
+  </section>
+  <section>
+    <h2>Changes</h2>
+    <p>Accounts, scores and tickets are coming. Before each one opens, this page will say what it keeps.</p>
+    <p class="dim">Last changed <time datetime="2026-11-21">2026-11-21</time>.</p>
+  </section>
+</main>
+{{template "foot" .}}{{end}}
+
+{{define "terms"}}{{template "head" .}}<main id="main" class="doc">
+  <div>
+    <h1 class="hot">House rules.</h1>
+    <p class="about">There are not many.</p>
+  </div>
+  <section>
+    <h2>The games are free</h2>
+    <p>Every game here is free to play, in the page or at home.</p>
+  </section>
+  <section>
+    <h2>The code is open</h2>
+    <p>The games and the code of this site are open source under the MIT licence. The licence file in each repository is the last word on what you may do with the code.</p>
+  </section>
+  <section>
+    <h2>As it is</h2>
+    <p>We offer the games and this site as they are. We make no promise that they are free of faults, or that they will always be here. The MIT licence says the same at more length.</p>
+  </section>
+  <section>
+    <h2>The relay</h2>
+    <p>The relay is there so two people can play a match. Use it for that. Do not flood it, pick at it, or use it to carry anything else. We may limit or block traffic that harms it, and we may change it or switch it off.</p>
+  </section>
+  <section>
+    <h2>Who runs this</h2>
+    <p>usr.games is operated by KOHANTIC LLC. To reach us: {{.Contact}}</p>
+  </section>
+  <section>
+    <h2>Changes</h2>
+    <p>These rules may change, and this page carries the date when they do.</p>
+    <p class="dim">Last changed <time datetime="2026-11-21">2026-11-21</time>.</p>
+  </section>
+</main>
+{{template "foot" .}}{{end}}
+
 {{define "404"}}{{template "head" .}}<main id="main" class="doc">
   <h1 class="hot">No such file or directory.</h1>
   <div>

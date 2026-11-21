@@ -31,6 +31,14 @@ A note is a file in `plan/` named for its day and its title, like `2026-11-21-th
 
 `make site` writes the page and the feed again. A note's file name is its address in the feed, so do not rename one after it is published.
 
+## The notices
+
+`/privacy` says what the site and the relay keep, and `/terms` holds the house rules. Both are in `internal/sitepages/templates/pages.tmpl`. When what is kept changes, `/privacy` changes in the same pull request, with its date.
+
+The one address the site gives is in `site/.well-known/security.txt` and, fenced so Cloudflare does not rewrite it, on the two notices. A test holds them to the same address, and fails a month before `security.txt` expires.
+
+Cloudflare adds its Web Analytics script to each page of usr.games at the edge. No file here names it, and `/privacy` says so.
+
 ## Deploys
 
 Cloudflare builds the site from this repository.
