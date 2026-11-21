@@ -75,7 +75,7 @@ func metas(page, name string) []string {
 
 // The tests below go over every page that is found. This one fails if a page was not.
 func TestTheSiteHasItsPages(t *testing.T) {
-	want := []string{"index.html", "404.html"}
+	want := []string{"index.html", "404.html", "terminals.html"}
 	for _, m := range games.Modules(list(t)) {
 		want = append(want, m+".html")
 	}
@@ -387,6 +387,21 @@ func TestTheListingHoldsEveryGameAndCountsThem(t *testing.T) {
 			t.Errorf("wanted the rows from A to Z, found %s out of place", g.Name)
 		}
 		last = i
+	}
+}
+
+// The front page names a few good terminals in one line, and the terminals page has the whole
+// list. A name on the first must be on the second.
+func TestTheFrontPagesTerminalsAreOnTheTerminalsPage(t *testing.T) {
+	m := regexp.MustCompile(`Best in ([^.]+)\.`).FindStringSubmatch(read(t, "site", "index.html"))
+	if m == nil {
+		t.Fatal(`index.html: wanted the line that starts "Best in"`)
+	}
+	full := read(t, "site", "terminals.html")
+	for _, name := range regexp.MustCompile(`,| or `).Split(m[1], -1) {
+		if name = strings.TrimSpace(name); name != "" && !strings.Contains(full, "<li>"+name+"</li>") {
+			t.Errorf("wanted %q, named on the front page, in the list on the terminals page", name)
+		}
 	}
 }
 

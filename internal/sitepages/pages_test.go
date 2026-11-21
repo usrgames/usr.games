@@ -128,6 +128,7 @@ func pages(t *testing.T) map[string]string {
 	}
 	render("tty1.html", "tty1", base("tty1: the usr.games launcher", "One command that installs the games, keeps them current, and starts them.", "tty1"))
 	render("arcade.html", "arcade", base("arcade: the usr.games server", "What the arcade's server does, and what it keeps.", "arcade"))
+	render("terminals.html", "terminals", base("Bring a good terminal: usr.games", "Which terminals show the games at their best, and what you see in the others.", ""))
 	missing := base("No such file or directory: usr.games", "Nothing lives at this address.", "")
 	missing.NoIndex = true
 	render("404.html", "404", missing)
