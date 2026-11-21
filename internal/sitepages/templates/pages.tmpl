@@ -22,7 +22,7 @@
       <p class="dim note"><a href="/tty1">tty1</a> is the launcher. It installs the games, keeps them current, and starts them.</p>
     </section>
     <section>
-      <h2>Bring a good terminal.</h2>
+      <h2><a href="/terminals">Bring a good terminal.</a></h2>
       <p class="dim">Best in Ghostty, kitty, WezTerm, foot or iTerm2. Apple's Terminal works, with one key held at a time.</p>
     </section>
   </div>
@@ -89,6 +89,39 @@
   <section>
     <h2>What comes next</h2>
     <p class="dim">More is coming. Before each new part opens, this page will say what it keeps.</p>
+  </section>
+</main>
+{{template "foot" .}}{{end}}
+
+{{define "terminals"}}{{template "head" .}}<main id="main" class="doc">
+  <div>
+    <h1 class="hot">Bring a good terminal.</h1>
+    <p class="about">The games are drawn in the cells of your terminal, so the terminal is both the screen and the joystick. Most will play them. A good one plays them better.</p>
+  </div>
+  <section>
+    <h2>Keys you can hold</h2>
+    <p>To walk and turn at once, a game has to know when you let go of a key. Terminals that speak the kitty keyboard protocol tell it:</p>
+    <ul class="cols"><li>Ghostty</li><li>kitty</li><li>WezTerm</li><li>foot</li><li>iTerm2</li><li>Alacritty</li><li>Rio</li><li>Warp</li></ul>
+    <p class="dim note">In the others only one key stays held at a time. Everything still plays. You just cannot walk and turn together.</p>
+  </section>
+  <section>
+    <h2>All the colours</h2>
+    <p>The games paint in 24-bit colour where the terminal says it has it, and in the nearest of 256 colours where it does not.</p>
+    <p class="dim note">Inside tmux or over ssh, the terminal's word often does not arrive. If the colours look banded there, this brings them back:</p>
+    <p><span class="dim">$</span> export COLORTERM=truecolor</p>
+  </section>
+  <section>
+    <h2>A big window</h2>
+    <p>Every cell is two pixels, one above the other, so a bigger window or a smaller font is a sharper picture. 80 columns by 24 rows is enough to play. More is better.</p>
+  </section>
+  <section>
+    <h2>Apple's Terminal</h2>
+    <p>It works, with three differences. One key stays held at a time. 24-bit colour arrived in macOS 26, and before that it shows 256. And the picture is a little blockier: its half blocks would leave a faint seam, so the games draw whole cells there instead.</p>
+  </section>
+  <section>
+    <h2>Check yours</h2>
+    <p><span class="dim">$</span> tty1 doctor</p>
+    <p class="dim note"><a href="/tty1">tty1</a> looks at the terminal it is running in and says what it found.</p>
   </section>
 </main>
 {{template "foot" .}}{{end}}
