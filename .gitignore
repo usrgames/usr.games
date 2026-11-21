@@ -1,0 +1,10 @@
+# macOS
+.DS_Store
+
+# test and coverage output
+*.test
+*.out
+
+# editors
+.idea/
+.vscode/
