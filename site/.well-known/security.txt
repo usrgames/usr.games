@@ -1,0 +1,4 @@
+Contact: mailto:hello@usr.games
+Expires: 2027-10-21T00:00:00Z
+Preferred-Languages: en
+Canonical: https://usr.games/.well-known/security.txt

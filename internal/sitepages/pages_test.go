@@ -42,9 +42,15 @@ type page struct {
 	Games    []games.Game // A to Z, as a listing prints them
 	Game     *games.Game
 	Others   []games.Game
-	Example  string      // a game to name in the launcher's examples
-	Notes    []plan.Note // the devlog, newest first
+	Example  string        // a game to name in the launcher's examples
+	Notes    []plan.Note   // the devlog, newest first
+	Contact  template.HTML // where the notices say to write
 }
+
+// contact is the address the notices give. Cloudflare rewrites an email address it finds in a
+// page into a script that prints it; the two comments tell it to leave this one as written. It
+// is passed as a value because html/template drops a comment written in a template.
+const contact = template.HTML("<!--email_off-->hello@usr.games<!--/email_off-->")
 
 // goTags returns one go-import tag for every module and, on a module's own page, its go-source.
 // They are built here and not in a template because html/template will not fill in the content
@@ -203,6 +209,12 @@ func pages(t *testing.T) map[string]string {
 	devlog.Notes = notes
 	render("plan.html", "plan", devlog)
 	out["plan.xml"] = feed(t, notes)
+	privacy := base("Privacy: usr.games", "What usr.games keeps about its visitors and players: almost nothing.", "")
+	privacy.Contact = contact
+	render("privacy.html", "privacy", privacy)
+	terms := base("Terms: usr.games", "The house rules of usr.games: free games, open code, and a relay for playing matches.", "")
+	terms.Contact = contact
+	render("terms.html", "terms", terms)
 	missing := base("No such file or directory: usr.games", "Nothing lives at this address.", "")
 	missing.NoIndex = true
 	render("404.html", "404", missing)
