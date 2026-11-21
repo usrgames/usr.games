@@ -1,0 +1,34 @@
+{{define "head"}}<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+{{.GoTags}}<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.Title}}</title>
+{{.Describe}}{{if .NoIndex}}<meta name="robots" content="noindex">
+{{end}}<link rel="preload" href="/media/fonts/VT323-Regular.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="stylesheet" href="/style.css">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+{{if .Script}}<script src="/floor.js" defer></script>
+{{end}}</head>
+<body>
+<a class="skip" href="#main">Skip to the page</a>
+<div class="tube">
+<header class="mast">
+{{if .Home}}  <h1 class="sign big"><img src="/sign.svg" alt="usr.games" width="720" height="80"></h1>
+{{else}}  <a class="sign" href="/"><img src="/sign.svg" alt="usr.games, the front page" width="720" height="80"></a>
+{{end}}</header>
+{{end}}
+
+{{define "foot"}}<footer class="foot">
+  <p class="dim">$ ls /usr/share/games</p>
+  <p class="ls"><a href="/tty1">tty1</a><a href="/arcade">arcade</a></p>
+  <p class="dim">Built on <a href="https://glonk.dev">glonk</a>. A directory since 1971. A studio since 2026. Operated by KOHANTIC LLC.</p>
+</footer>
+</div>
+</body>
+</html>
+{{end}}
+
+{{define "games"}}<p class="cols">{{range .Games}}<a href="/{{.Name}}"{{if and $.Game (eq .Name $.Game.Name)}} class="rev" aria-current="page"{{end}}>{{.Name}}(6)</a>{{end}}</p>{{end}}

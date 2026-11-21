@@ -1,0 +1,29 @@
+[
+  {
+    "name": "rustwake",
+    "players": "1p",
+    "blurb": "Clear the rogue machines out of a dark plant.",
+    "about": "Clear the rogue machines out of a dark plant, one map at a time.",
+    "facts": "12 maps. Five kinds of machine. One gun, so aim.",
+    "picture": "A sketch of rustwake: a corridor, a door at its end, a drone, and your gun.",
+    "keys": [["W S", "walk"], ["A D", "step aside"], ["Left Right", "turn"], ["Space", "fire"], ["Esc", "pause"]]
+  },
+  {
+    "name": "skyspear",
+    "players": "1p",
+    "blurb": "Cave people, dinosaurs and falling stars.",
+    "about": "A prehistoric lost world, built and broken one block at a time: cave people among dinosaurs, fire mountains and falling stars.",
+    "facts": "A world with no end, made from a seed.",
+    "picture": "A sketch of skyspear: stepped land, a tree, a hunter with a spear, and a falling star.",
+    "keys": [["W A S D", "walk"], ["Arrows", "look"], ["Space", "jump"], ["Q E", "break, place"], ["I", "your things"], ["Esc", "pause"]]
+  },
+  {
+    "name": "breakshot",
+    "players": "2p net",
+    "blurb": "Eight-ball pool, alone or online.",
+    "about": "Eight-ball pool. Practice alone, share a keyboard, or play a friend online with a room code.",
+    "facts": "Press V and the camera flies down behind the cue ball.",
+    "picture": "A sketch of breakshot: a pool table, the rack, the cue ball and where it is aimed.",
+    "keys": [["Left Right", "aim"], ["Space", "power, then shoot"], ["V", "behind the cue ball"], ["M", "sound"], ["Esc", "menu"]]
+  }
+]
