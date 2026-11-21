@@ -1,8 +1,8 @@
-// Package sitepages writes the pages of the site from games.json and the templates beside this
-// file. It has no code of its own outside its test: the pages are committed, Cloudflare serves
+// Package sitepages writes the pages of the site, and the devlog's feed, from games.json, the
+// notes in plan/ and the templates beside this file. It has no code of its own outside its test: the pages are committed, Cloudflare serves
 // them as they are, and no Go runs when the site is deployed.
 //
-// To write them again after a change to games.json or a template:
+// To write them again after a change to games.json, a note or a template:
 //
 //	go test ./internal/sitepages -run TestThePagesAreWhatTheSourceSays -update
 //
@@ -11,6 +11,7 @@ package sitepages
 
 import (
 	"bytes"
+	"encoding/xml"
 	"flag"
 	"fmt"
 	"html"
@@ -19,11 +20,13 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/usrgames/usr.games/internal/games"
+	"github.com/usrgames/usr.games/internal/plan"
 )
 
-var update = flag.Bool("update", false, "write the pages again from games.json and the templates")
+var update = flag.Bool("update", false, "write the pages again from games.json, the notes and the templates")
 
 func root(path string) string { return filepath.Join("..", "..", filepath.FromSlash(path)) }
 
@@ -39,7 +42,8 @@ type page struct {
 	Games    []games.Game // A to Z, as a listing prints them
 	Game     *games.Game
 	Others   []games.Game
-	Example  string // a game to name in the launcher's examples
+	Example  string      // a game to name in the launcher's examples
+	Notes    []plan.Note // the devlog, newest first
 }
 
 // goTags returns one go-import tag for every module and, on a module's own page, its go-source.
@@ -76,7 +80,68 @@ func describe(title, text string, card bool) template.HTML {
 	return template.HTML(out)
 }
 
-// pages returns every page of the site by its path in site/.
+// feed returns the devlog as an Atom feed. A note has a day and no hour, so its time is midnight
+// UTC, and the feed is as old as its newest note: nothing in it changes until a note does.
+func feed(t *testing.T, notes []plan.Note) string {
+	t.Helper()
+	type link struct {
+		Rel  string `xml:"rel,attr"`
+		Type string `xml:"type,attr"`
+		Href string `xml:"href,attr"`
+	}
+	type content struct {
+		Type string `xml:"type,attr"`
+		HTML string `xml:",chardata"`
+	}
+	type entry struct {
+		Title   string  `xml:"title"`
+		ID      string  `xml:"id"`
+		Updated string  `xml:"updated"`
+		Link    link    `xml:"link"`
+		Content content `xml:"content"`
+	}
+	doc := struct {
+		XMLName xml.Name `xml:"http://www.w3.org/2005/Atom feed"`
+		Title   string   `xml:"title"`
+		ID      string   `xml:"id"`
+		Updated string   `xml:"updated"`
+		Author  string   `xml:"author>name"`
+		Links   []link   `xml:"link"`
+		Entries []entry  `xml:"entry"`
+	}{
+		Title:   "usr.games: the plan",
+		ID:      "https://usr.games/plan",
+		Updated: notes[0].Date.Format(time.RFC3339),
+		Author:  "usr.games",
+		Links: []link{
+			{Rel: "self", Type: "application/atom+xml", Href: "https://usr.games/plan.xml"},
+			{Rel: "alternate", Type: "text/html", Href: "https://usr.games/plan"},
+		},
+	}
+	for _, n := range notes {
+		var body strings.Builder
+		for _, p := range n.Paras {
+			if p.Command {
+				body.WriteString("<pre>$ " + html.EscapeString(p.Text) + "</pre>")
+			} else {
+				body.WriteString("<p>" + html.EscapeString(p.Text) + "</p>")
+			}
+		}
+		at := "https://usr.games/plan#" + n.ID
+		doc.Entries = append(doc.Entries, entry{
+			Title: n.Title, ID: at, Updated: n.Date.Format(time.RFC3339),
+			Link:    link{Rel: "alternate", Type: "text/html", Href: at},
+			Content: content{Type: "html", HTML: body.String()},
+		})
+	}
+	out, err := xml.MarshalIndent(doc, "", "  ")
+	if err != nil {
+		t.Fatal(err)
+	}
+	return xml.Header + string(out) + "\n"
+}
+
+// pages returns every made text file of the site, the pages and the feed, by its path in site/.
 func pages(t *testing.T) map[string]string {
 	t.Helper()
 	list, err := games.Load(root("games.json"))
@@ -87,6 +152,11 @@ func pages(t *testing.T) map[string]string {
 		// The width a drawn name is given in a page: ten units a cell, six cells a letter.
 		"namew": func(name string, more int) int { return (len(name) + more) * 60 },
 	}).ParseGlob(filepath.Join("templates", "*.tmpl"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	notes, err := plan.Load(root("plan"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -129,6 +199,10 @@ func pages(t *testing.T) map[string]string {
 	render("tty1.html", "tty1", base("tty1: the usr.games launcher", "One command that installs the games, keeps them current, and starts them.", "tty1"))
 	render("arcade.html", "arcade", base("arcade: the usr.games server", "What the arcade's server does, and what it keeps.", "arcade"))
 	render("terminals.html", "terminals", base("Bring a good terminal: usr.games", "Which terminals show the games at their best, and what you see in the others.", ""))
+	devlog := base("The plan: usr.games", "What we are building at usr.games, one part at a time. Newest first.", "")
+	devlog.Notes = notes
+	render("plan.html", "plan", devlog)
+	out["plan.xml"] = feed(t, notes)
 	missing := base("No such file or directory: usr.games", "Nothing lives at this address.", "")
 	missing.NoIndex = true
 	render("404.html", "404", missing)
@@ -150,19 +224,24 @@ func TestThePagesAreWhatTheSourceSays(t *testing.T) {
 			continue
 		}
 		if string(got) != want {
-			t.Errorf("site/%s is not what games.json and the templates say (run with -update, or `make site`, to write it again)", path)
+			t.Errorf("site/%s is not what its source says (run with -update, or `make site`, to write it again)", path)
 		}
 	}
 }
 
-// A page in site/ that nothing here writes was made by hand or left behind by a game that has
-// gone: either way it would be served, and stale.
+// A page or a feed in site/ that nothing here writes was made by hand or left behind by a game
+// that has gone: either way it would be served, and stale.
 func TestEveryPageOfTheSiteIsWrittenHere(t *testing.T) {
 	made := pages(t)
 	found, err := filepath.Glob(root("site/*.html"))
 	if err != nil {
 		t.Fatal(err)
 	}
+	feeds, err := filepath.Glob(root("site/*.xml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	found = append(found, feeds...)
 	for _, file := range found {
 		if _, ok := made[filepath.Base(file)]; !ok {
 			t.Errorf("site/%s is written by nothing here: remove it, or add it to the pages", filepath.Base(file))

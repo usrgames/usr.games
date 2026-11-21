@@ -1,0 +1,13 @@
+The sign is up
+
+The sign is up. It reads #!/usr/games, and every letter of it is drawn in cells, five wide and seven tall, like everything else in a terminal.
+
+Under it is the front page. It is the answer to one command:
+
+$ ls -l /usr/games
+
+Three games are in the listing so far: breakshot, rustwake and skyspear. Beside the listing is a screen that shows the game you are on. For now its pictures are sketches. Recordings of the real games come later.
+
+There is also a page about terminals, for anyone wondering whether theirs will do. Most will.
+
+Next we wire up the cabinets: playing a game right in the page, and taking one home with a single line.

@@ -7,10 +7,12 @@ The site of usr.games, an arcade in your terminal. It is plain files in `site/`,
 | Path | What |
 |---|---|
 | `games.json` | The one list of games. The pages, the drawn names and the import tags are all made from it. |
+| `plan/` | The devlog's notes, one text file each. The page at `/plan` and its feed are made from them. |
 | `site/` | What is served. The pages and the drawings in it are made files: do not edit them by hand. |
 | `site/style.css`, `site/floor.js` | The stylesheet and the site's one script, written by hand. |
 | `internal/brand` | Draws the sign, the names, the icons and the link-preview card. |
-| `internal/sitepages` | Writes the pages from `games.json` and its templates. |
+| `internal/plan` | Reads the notes in `plan/`. |
+| `internal/sitepages` | Writes the pages, and the devlog's feed, from `games.json`, the notes and its templates. |
 | `internal/sitecheck` | Tests of the finished site: tags, links, nothing loaded from elsewhere. |
 | `BRAND.md` | The brand's facts. |
 
@@ -22,6 +24,12 @@ make check   # format, tests, vet: fails if a made file has drifted
 ```
 
 To add a game: add its entry to `games.json`, add a sketch to `internal/brand/sketch.go` until its recording exists, run `make site`, and commit what it wrote.
+
+## The devlog
+
+A note is a file in `plan/` named for its day and its title, like `2026-11-21-the-sign-is-up.txt`. Its first line is the title. The paragraphs follow, a blank line apart, and one that starts with `$ ` is shown as a command. A note is plain text: it holds no links.
+
+`make site` writes the page and the feed again. A note's file name is its address in the feed, so do not rename one after it is published.
 
 ## Deploys
 

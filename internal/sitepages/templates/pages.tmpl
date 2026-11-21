@@ -126,6 +126,21 @@
 </main>
 {{template "foot" .}}{{end}}
 
+{{define "plan"}}{{template "head" .}}<main id="main" class="doc">
+  <div>
+    <h1 class="hot">The plan.</h1>
+    <p class="about">What we are building, one part at a time. Newest first.</p>
+    <p class="dim note">It is a feed too: <a href="/plan.xml">/plan.xml</a>.</p>
+  </div>
+  <p><span class="dim">$</span> cat /usr/games/.plan</p>
+{{range .Notes}}  <article id="{{.ID}}">
+    <h2><a href="#{{.ID}}">{{.Title}}</a></h2>
+    <p class="dim"><time datetime="{{.Day}}">{{.Day}}</time></p>
+{{range .Paras}}    <p>{{if .Command}}<span class="dim">$</span> {{end}}{{.Text}}</p>
+{{end}}  </article>
+{{end}}</main>
+{{template "foot" .}}{{end}}
+
 {{define "404"}}{{template "head" .}}<main id="main" class="doc">
   <h1 class="hot">No such file or directory.</h1>
   <div>
