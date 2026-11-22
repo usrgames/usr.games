@@ -1,0 +1,11 @@
+# What a browser may load on usr.games: this site's own files, and the one script Cloudflare
+# adds to each page at the edge to count visits, which reports back to this same address.
+# Nothing written inside a page is run. A test holds the pages to this policy.
+/*
+  Content-Security-Policy: default-src 'none'; script-src 'self' https://static.cloudflareinsights.com/beacon.min.js/; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+# A preview is a draft, at an address of Cloudflare's: search engines are told not to list it.
+https://:preview.:account.workers.dev/*
+  X-Robots-Tag: noindex

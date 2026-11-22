@@ -279,6 +279,92 @@ func TestTheLinkPreviewNamesAFileOfTheSite(t *testing.T) {
 	}
 }
 
+// headers returns the header lines of one block of site/_headers, by the address pattern that
+// opens the block.
+func headers(t *testing.T, pattern string) map[string]string {
+	t.Helper()
+	out, in := map[string]string{}, false
+	for _, line := range strings.Split(read(t, "site", "_headers"), "\n") {
+		switch {
+		case line == "" || strings.HasPrefix(line, "#"):
+		case !strings.HasPrefix(line, " "):
+			in = line == pattern
+		case in:
+			name, value, ok := strings.Cut(strings.TrimSpace(line), ": ")
+			if !ok {
+				t.Fatalf("_headers: wanted \"Name: value\", got %q", line)
+			}
+			out[name] = value
+		}
+	}
+	if len(out) == 0 {
+		t.Fatalf("_headers: wanted headers for %s", pattern)
+	}
+	return out
+}
+
+// The browser is told what a page may load, and refuses the rest. So the policy has to allow
+// every kind of thing the pages do load, the pages may hold nothing a policy without
+// 'unsafe-inline' refuses, and the policy may not be loosened to make a page work.
+func TestThePolicyAllowsWhatThePagesLoad(t *testing.T) {
+	all := headers(t, "/*")
+	policy := map[string][]string{}
+	for _, d := range strings.Split(all["Content-Security-Policy"], ";") {
+		if f := strings.Fields(d); len(f) > 0 {
+			policy[f[0]] = f[1:]
+		}
+	}
+	if got := policy["default-src"]; !slices.Equal(got, []string{"'none'"}) {
+		t.Errorf("_headers: wanted default-src 'none', so that what is not named is refused, got %q", got)
+	}
+	for name, sources := range policy {
+		for _, s := range sources {
+			if strings.HasPrefix(s, "'unsafe-") || s == "*" || s == "https:" || s == "data:" {
+				t.Errorf("_headers: wanted %s to name its sources, got %s", name, s)
+			}
+		}
+	}
+	// The visit counter: Cloudflare's script, added at the edge, which reports to this site.
+	if !slices.Contains(policy["script-src"], "https://static.cloudflareinsights.com/beacon.min.js/") || !slices.Contains(policy["connect-src"], "'self'") {
+		t.Errorf("_headers: wanted Cloudflare's analytics script allowed, and its report to this site")
+	}
+	if all["X-Content-Type-Options"] != "nosniff" || all["Referrer-Policy"] == "" {
+		t.Errorf("_headers: wanted X-Content-Type-Options: nosniff and a Referrer-Policy on every address, got %v", all)
+	}
+	// Only a preview is kept out of search engines; a rule for every address would hide the site.
+	if _, hidden := all["X-Robots-Tag"]; hidden || headers(t, "https://:preview.:account.workers.dev/*")["X-Robots-Tag"] != "noindex" {
+		t.Errorf("_headers: wanted X-Robots-Tag: noindex on workers.dev addresses and on no other")
+	}
+
+	loads := map[string]*regexp.Regexp{
+		"script-src": regexp.MustCompile(`<script\b[^>]*\bsrc="`),
+		"style-src":  regexp.MustCompile(`<link\b[^>]*\brel="stylesheet"`),
+		"img-src":    regexp.MustCompile(`<img\b|<link\b[^>]*\brel="(?:icon|apple-touch-icon)"`),
+		"font-src":   regexp.MustCompile(`<link\b[^>]*\bas="font"`),
+	}
+	refused := map[string]*regexp.Regexp{
+		"a script written in the page": regexp.MustCompile(`<script(?:\s[^>]*)?>\s*[^<\s]`),
+		"a style block":                regexp.MustCompile(`<style\b`),
+		"a style attribute":            regexp.MustCompile(`<[^>]*\sstyle="`),
+		"an event handler":             regexp.MustCompile(`<[^>]*\son[a-z]+="`),
+		"a frame":                      regexp.MustCompile(`<i?frame\b|<object\b|<embed\b`),
+		"a form":                       regexp.MustCompile(`<form\b`),
+	}
+	for _, name := range pages {
+		page := read(t, "site", name)
+		for directive, re := range loads {
+			if re.MatchString(page) && !slices.Contains(policy[directive], "'self'") {
+				t.Errorf("%s: the page loads what %s 'self' allows, and the policy has %q", name, directive, policy[directive])
+			}
+		}
+		for what, re := range refused {
+			if m := re.FindString(page); m != "" {
+				t.Errorf("%s: wanted nothing the policy refuses, found %s: %s", name, what, m)
+			}
+		}
+	}
+}
+
 // The notices say who runs the site and where to write, and security.txt says where to report
 // a hole. A file whose date has passed tells a researcher nobody is listening, so this fails a
 // month before it does: move Expires on, by less than a year, and it passes again.
