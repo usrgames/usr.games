@@ -16,11 +16,11 @@ So a player holds one thing, the root's public key, and it does not change when 
 
 ## Check a release by hand
 
-A stock `ssh-keygen` does it, with the list from this site. Here `MANIFEST` stands for a release's manifest and `MANIFEST.sig` for its signature:
+Every release holds `manifest.json`, which names each of its files with its size and SHA-256, and `manifest.json.sig`, the signature of that manifest. A stock `ssh-keygen` checks it, with the list from this site:
 
 ```sh
 curl -fsSLO https://usr.games/etc/allowed_signers
-ssh-keygen -Y verify -f allowed_signers -I release@usr.games -n release@usr.games -s MANIFEST.sig < MANIFEST
+ssh-keygen -Y verify -f allowed_signers -I release@usr.games -n release@usr.games -s manifest.json.sig < manifest.json
 ```
 
 It answers `Good "release@usr.games" signature` or it refuses. Then check each file you downloaded against its hash in the manifest.
@@ -38,7 +38,9 @@ The certificate is inside every signature, so a release stops checking out on th
    ```
 
 2. Replace `site/etc/release-cert.pub` with it, in a pull request. The test checks that the root signed it.
-3. In each repository that releases, sign the latest release again, so that it carries the new certificate. A program released since the renewal needs nothing.
+3. In each repository that releases, sign the latest release again, so that it carries the new certificate: run its release workflow by hand on that release's tag, with `again` ticked, and approve it. A program released since the renewal needs nothing.
+
+The workflow that builds, signs and tries every release, and the manifest's format, are in [RELEASES.md](https://github.com/usrgames/.github/blob/main/RELEASES.md) of `usrgames/.github`.
 
 ## Replace the release key
 
