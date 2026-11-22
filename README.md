@@ -10,6 +10,7 @@ The site of usr.games, an arcade in your terminal. It is plain files in `site/`,
 | `plan/` | The devlog's notes, one text file each. The page at `/plan` and its feed are made from them. |
 | `site/` | What is served. The pages and the drawings in it are made files: do not edit them by hand. |
 | `site/style.css`, `site/floor.js` | The stylesheet and the site's one script, written by hand. |
+| `site/_headers` | What a browser may load on a page, sent by Cloudflare with every answer. Not served as a file. |
 | `internal/brand` | Draws the sign, the names, the icons and the link-preview card. |
 | `internal/plan` | Reads the notes in `plan/`. |
 | `internal/sitepages` | Writes the pages, and the devlog's feed, from `games.json`, the notes and its templates. |
