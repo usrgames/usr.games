@@ -16,6 +16,8 @@ The site of usr.games, an arcade in your terminal. It is plain files in `site/`,
 | `internal/sitepages` | Writes the pages, and the devlog's feed, from `games.json`, the notes and its templates. |
 | `internal/sitecheck` | Tests of the finished site: tags, links, nothing loaded from elsewhere. |
 | `BRAND.md` | The brand's facts. |
+| `KEYS.md` | What signs a release, how to check one, and how a key is renewed or replaced. |
+| `site/etc/allowed_signers`, `site/etc/release-cert.pub` | The root's public key, and the certificate in which it vouches for the key that signs releases. A test holds the two together. |
 
 ## Working on it
 

@@ -4,6 +4,10 @@
 package sitecheck
 
 import (
+	"bytes"
+	"crypto/ed25519"
+	"encoding/base64"
+	"encoding/binary"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
@@ -667,6 +671,118 @@ func TestTheStylesheetWearsTheBrandsColours(t *testing.T) {
 	// Blinking that lasts more than five seconds needs a way to stop it, so it stops by itself.
 	if strings.Contains(css, "infinite") {
 		t.Error("style.css: wanted nothing to move without end")
+	}
+}
+
+// fields reads what SSH writes one after another in a key or a certificate: a text or a blob
+// as four bytes of length and then that many bytes, and a number as eight bytes or four.
+type fields struct {
+	t    *testing.T
+	what string
+	rest []byte
+}
+
+func (f *fields) take(n int) []byte {
+	f.t.Helper()
+	if n < 0 || n > len(f.rest) {
+		f.t.Fatalf("%s: cut short", f.what)
+	}
+	b := f.rest[:n]
+	f.rest = f.rest[n:]
+	return b
+}
+func (f *fields) blob() []byte  { return f.take(int(binary.BigEndian.Uint32(f.take(4)))) }
+func (f *fields) num64() uint64 { return binary.BigEndian.Uint64(f.take(8)) }
+func (f *fields) num32() uint32 { return binary.BigEndian.Uint32(f.take(4)) }
+
+// sshKey returns the 32 bytes of an Ed25519 public key from the form SSH writes it in.
+func sshKey(t *testing.T, what string, b []byte) []byte {
+	t.Helper()
+	f := &fields{t: t, what: what, rest: b}
+	if kind := string(f.blob()); kind != "ssh-ed25519" {
+		t.Fatalf("%s: wanted an ssh-ed25519 key, got %q", what, kind)
+	}
+	key := f.blob()
+	if len(key) != ed25519.PublicKeySize || len(f.rest) != 0 {
+		t.Fatalf("%s: wanted a key of %d bytes and nothing after it", what, ed25519.PublicKeySize)
+	}
+	return key
+}
+
+// A release is checked against two files of the site: the list that names the root key, and
+// the certificate in which the root vouches, for a year, for the key that signs releases. They
+// have to belong together, or nothing the studio releases can be installed. And the certificate
+// is inside every signature, so a release stops checking out the day it ends: this fails a
+// month before that. KEYS.md says how it is renewed.
+func TestTheRootVouchesForTheReleaseKey(t *testing.T) {
+	const who = "release@usr.games"
+	var roots [][]byte
+	for _, line := range strings.Split(read(t, "site", "etc", "allowed_signers"), "\n") {
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		// One identity, one purpose: the root may vouch for the release key and for nothing else.
+		f := strings.Fields(line)
+		if len(f) != 4 || f[0] != who || f[1] != `cert-authority,namespaces="`+who+`"` || f[2] != "ssh-ed25519" {
+			t.Fatalf("allowed_signers: wanted `%s cert-authority,namespaces=\"%s\" ssh-ed25519 KEY`, got %q", who, who, line)
+		}
+		raw, err := base64.StdEncoding.DecodeString(f[3])
+		if err != nil {
+			t.Fatalf("allowed_signers: the key is not base64: %v", err)
+		}
+		roots = append(roots, sshKey(t, "allowed_signers", raw))
+	}
+	if len(roots) != 1 {
+		t.Fatalf("allowed_signers: wanted one root key, got %d", len(roots))
+	}
+
+	text := strings.Fields(read(t, "site", "etc", "release-cert.pub"))
+	if len(text) < 2 || text[0] != "ssh-ed25519-cert-v01@openssh.com" {
+		t.Fatalf("release-cert.pub: wanted an ssh-ed25519 certificate")
+	}
+	whole, err := base64.StdEncoding.DecodeString(text[1])
+	if err != nil {
+		t.Fatalf("release-cert.pub: not base64: %v", err)
+	}
+	c := &fields{t: t, what: "release-cert.pub", rest: whole}
+	c.blob()  // the kind, again
+	c.blob()  // a nonce
+	c.blob()  // the release key itself
+	c.num64() // the serial
+	kind := c.num32()
+	c.blob() // the key's id
+	names := c.blob()
+	after, before := time.Unix(int64(c.num64()), 0), time.Unix(int64(c.num64()), 0)
+	options, extensions := c.blob(), c.blob()
+	c.blob() // reserved
+	signer := c.blob()
+	signed := whole[:len(whole)-len(c.rest)] // the root signed everything up to here
+	s := &fields{t: t, what: "release-cert.pub: the signature", rest: c.blob()}
+	if alg := string(s.blob()); alg != "ssh-ed25519" {
+		t.Fatalf("release-cert.pub: wanted an ssh-ed25519 signature, got %q", alg)
+	}
+	signature := s.blob()
+	if len(c.rest) != 0 {
+		t.Fatalf("release-cert.pub: %d bytes after the signature", len(c.rest))
+	}
+
+	if !bytes.Equal(sshKey(t, "release-cert.pub: the signer", signer), roots[0]) || !ed25519.Verify(roots[0], signed, signature) {
+		t.Errorf("release-cert.pub: wanted it signed by the root key in allowed_signers")
+	}
+	n := &fields{t: t, what: "release-cert.pub: the names", rest: names}
+	if kind != 1 || string(n.blob()) != who || len(n.rest) != 0 {
+		t.Errorf("release-cert.pub: wanted a certificate for %s alone", who)
+	}
+	if len(options) != 0 || len(extensions) != 0 {
+		t.Errorf("release-cert.pub: wanted it to permit nothing but signing; issue it with -O clear")
+	}
+	switch left := time.Until(before); {
+	case time.Now().Before(after):
+		t.Errorf("release-cert.pub: it is not good until %s", after.UTC().Format(time.DateOnly))
+	case left < 30*24*time.Hour:
+		t.Errorf("release-cert.pub: it ends on %s, and every release stops checking out that day: renew it as KEYS.md says", before.UTC().Format(time.DateOnly))
+	case before.Sub(after) > 366*24*time.Hour:
+		t.Errorf("release-cert.pub: wanted it good for a year at most, got %s to %s", after.UTC().Format(time.DateOnly), before.UTC().Format(time.DateOnly))
 	}
 }
 
