@@ -1,0 +1,4 @@
+# The root key of usr.games. It signs nothing but the certificate of the key that signs
+# releases, and that certificate is beside this file, as release-cert.pub. KEYS.md in
+# https://github.com/usrgames/usr.games says how to check a release with this list.
+release@usr.games cert-authority,namespaces="release@usr.games" ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM1V4RRWS4toT6TmK1CmZxSfzferrpobAAyk58zOIjW7
