@@ -792,6 +792,31 @@ func TestTheRootVouchesForTheReleaseKey(t *testing.T) {
 	}
 }
 
+// tty1 reads this file to know which games there are. It holds each game of games.json once,
+// from A to Z, in a shape the launcher refuses if it does not know it.
+func TestTheLauncherIsServedEveryGame(t *testing.T) {
+	var doc struct {
+		Schema int `json:"schema"`
+		Games  []struct {
+			Name    string `json:"name"`
+			Players string `json:"players"`
+			Blurb   string `json:"blurb"`
+		} `json:"games"`
+	}
+	if err := json.Unmarshal([]byte(read(t, "site", "etc", "games.json")), &doc); err != nil {
+		t.Fatalf("site/etc/games.json: %v", err)
+	}
+	want := games.ByName(list(t))
+	if doc.Schema != 1 || len(doc.Games) != len(want) {
+		t.Fatalf("site/etc/games.json: wanted schema 1 and %d games, got schema %d and %d", len(want), doc.Schema, len(doc.Games))
+	}
+	for i, g := range want {
+		if got := doc.Games[i]; got.Name != g.Name || got.Players != g.Players || got.Blurb != g.Blurb {
+			t.Errorf("site/etc/games.json: wanted %s (%s) at %d, as games.json has it, got %+v", g.Name, g.Players, i, got)
+		}
+	}
+}
+
 // Online clients read this file for notices. It must stay plain JSON they can parse.
 func TestTheNoticeFileIsPlainJSON(t *testing.T) {
 	var notice struct {

@@ -11,6 +11,7 @@ package sitepages
 
 import (
 	"bytes"
+	"encoding/json"
 	"encoding/xml"
 	"flag"
 	"fmt"
@@ -147,7 +148,32 @@ func feed(t *testing.T, notes []plan.Note) string {
 	return xml.Header + string(out) + "\n"
 }
 
-// pages returns every made text file of the site, the pages and the feed, by its path in site/.
+// listing returns the list of games as tty1 reads it, at /etc/games.json: every game from A to
+// Z, with what a listing shows of it. The launcher's `tty1 ls` is this file, so a game is on the
+// floor and in the launcher from the same line of games.json.
+func listing(t *testing.T, sorted []games.Game) string {
+	t.Helper()
+	type game struct {
+		Name    string `json:"name"`
+		Players string `json:"players"`
+		Blurb   string `json:"blurb"`
+	}
+	doc := struct {
+		Schema int    `json:"schema"`
+		Games  []game `json:"games"`
+	}{Schema: 1}
+	for _, g := range sorted {
+		doc.Games = append(doc.Games, game{g.Name, g.Players, g.Blurb})
+	}
+	out, err := json.MarshalIndent(doc, "", "  ")
+	if err != nil {
+		t.Fatal(err)
+	}
+	return string(out) + "\n"
+}
+
+// pages returns every made text file of the site, the pages, the feed and the list of games, by
+// its path in site/.
 func pages(t *testing.T) map[string]string {
 	t.Helper()
 	list, err := games.Load(root("games.json"))
@@ -209,6 +235,7 @@ func pages(t *testing.T) map[string]string {
 	devlog.Notes = notes
 	render("plan.html", "plan", devlog)
 	out["plan.xml"] = feed(t, notes)
+	out["etc/games.json"] = listing(t, sorted)
 	privacy := base("Privacy: usr.games", "What usr.games keeps about its visitors and players: almost nothing.", "")
 	privacy.Contact = contact
 	render("privacy.html", "privacy", privacy)
