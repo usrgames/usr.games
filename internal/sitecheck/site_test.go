@@ -735,6 +735,12 @@ func TestTheRootVouchesForTheReleaseKey(t *testing.T) {
 	if len(roots) != 1 {
 		t.Fatalf("allowed_signers: wanted one root key, got %d", len(roots))
 	}
+	// Someone who opens either file in a browser should be shown it, not offered a download.
+	for _, name := range []string{"/etc/allowed_signers", "/etc/release-cert.pub"} {
+		if got := headers(t, name)["Content-Type"]; !strings.HasPrefix(got, "text/plain") {
+			t.Errorf("_headers: wanted %s served as text/plain, got %q", name, got)
+		}
+	}
 
 	text := strings.Fields(read(t, "site", "etc", "release-cert.pub"))
 	if len(text) < 2 || text[0] != "ssh-ed25519-cert-v01@openssh.com" {

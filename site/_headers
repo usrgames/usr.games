@@ -6,6 +6,13 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
 
+# The two key files are text. Left alone, one has no kind at all and the other, for its ending,
+# is called a Publisher document, and a browser told not to guess would only offer to save them.
+/etc/allowed_signers
+  Content-Type: text/plain; charset=utf-8
+/etc/release-cert.pub
+  Content-Type: text/plain; charset=utf-8
+
 # A preview is a draft, at an address of Cloudflare's: search engines are told not to list it.
 https://:preview.:account.workers.dev/*
   X-Robots-Tag: noindex
