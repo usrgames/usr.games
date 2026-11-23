@@ -26,7 +26,8 @@ var (
 
 // LoadLock reads the lock at path and returns its pins, A to Z. It refuses a pin of a program
 // not among modules, a version that is not vX.Y.Z, a hash that is not one, and anything but
-// one manual page and, for a game with a recording, NAME.gif and its still, NAME.png.
+// one manual page, a game's recording (NAME.gif and its still, NAME.png) and a game's build for
+// a web page (NAME.wasm.gz and the wasm_exec.js of the Go that built it), each both or neither.
 func LoadLock(path string, modules []string) ([]Pin, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -47,7 +48,7 @@ func LoadLock(path string, modules []string) ([]Pin, error) {
 		if !versionText.MatchString(pin.Version) {
 			return nil, fmt.Errorf("%s: %s: wanted a version such as v0.1.0, got %q", path, name, pin.Version)
 		}
-		pages, recording := 0, 0
+		pages, recording, build := 0, 0, 0
 		for file, sum := range pin.Files {
 			if !hashText.MatchString(sum) {
 				return nil, fmt.Errorf("%s: %s: %s: wanted a SHA-256 in hex, got %q", path, name, file, sum)
@@ -57,6 +58,8 @@ func LoadLock(path string, modules []string) ([]Pin, error) {
 				pages++
 			case file == name+".gif" || file == name+".png":
 				recording++
+			case file == name+".wasm.gz" || file == "wasm_exec.js":
+				build++
 			default:
 				return nil, fmt.Errorf("%s: %s pins %s, which the site has no use for", path, name, file)
 			}
@@ -66,6 +69,9 @@ func LoadLock(path string, modules []string) ([]Pin, error) {
 		}
 		if recording == 1 {
 			return nil, fmt.Errorf("%s: %s: wanted a recording as both %s.gif and its still, %s.png, got one of them", path, name, name, name)
+		}
+		if build == 1 {
+			return nil, fmt.Errorf("%s: %s: wanted a build for a web page as both %s.wasm.gz and wasm_exec.js, got one of them", path, name, name)
 		}
 		out = append(out, pin)
 	}
@@ -89,11 +95,23 @@ func (p Pin) Recorded() bool {
 	return ok
 }
 
-// Path returns where the site keeps a pinned file, from the repository's root: a manual page in
-// man/, which its page on the site is made from, and a recording where the site serves it.
-func Path(name, file string) string {
-	if strings.HasSuffix(file, ".html") {
+// Playable says whether the pin holds a build of the game for a web page, so that it can be
+// played there.
+func (p Pin) Playable() bool {
+	_, ok := p.Files[p.Name+".wasm.gz"]
+	return ok
+}
+
+// Path returns where the site keeps a pinned file of a program's release, from the repository's
+// root: a manual page in man/, which its page on the site is made from, a recording where the
+// site serves it, and a build for a web page at an address that carries its version, so that it
+// can be kept as long as a browser likes.
+func Path(name, version, file string) string {
+	switch {
+	case strings.HasSuffix(file, ".html"):
 		return "man/" + file
+	case file == name+".wasm.gz" || file == "wasm_exec.js":
+		return "site/play/" + name + "/" + version + "/" + file
 	}
 	return "site/media/" + name + "/" + file
 }

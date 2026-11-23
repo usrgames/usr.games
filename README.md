@@ -10,7 +10,8 @@ The site of usr.games, an arcade in your terminal. It is plain files in `site/`,
 | `games.lock.json` | The release of each program the site pins, with the hash of each of its files the site uses. Written by `scripts/pin.sh`. |
 | `man/` | The manual page of each pinned release, byte for byte as the release ships it. The pages at `/man/<name>` are made from them. Written by `scripts/pin.sh`. |
 | `site/media/<game>/<game>.gif`, `.png` | A game's recording and its still, byte for byte as its release ships them. Its screens show them. Written by `scripts/pin.sh`. |
-| `scripts/pin.sh` | Pins a release: it checks the studio's signature on the release's manifest and each file against it, then writes the manual page, a game's recording and their hashes. CI tries it against the latest real releases, and against copies spoiled in each way it must refuse. |
+| `site/play/<game>/<version>/` | A game's build for a web page and the `wasm_exec.js` of the Go that built it, byte for byte as its release ships them, at an address that carries the version. Written by `scripts/pin.sh`. |
+| `scripts/pin.sh` | Pins a release: it checks the studio's signature on the release's manifest and each file against it, then writes the manual page, a game's recording, its build for a web page and their hashes. CI tries it against the latest real releases, and against copies spoiled in each way it must refuse. |
 | `plan/` | The devlog's notes, one text file each. The page at `/plan` and its feed are made from them. |
 | `site/` | What is served. The pages and the drawings in it are made files: do not edit them by hand. |
 | `site/style.css`, `site/floor.js` | The stylesheet and the site's one script, written by hand. |
@@ -34,7 +35,7 @@ make check   # format, tests, vet: fails if a made file has drifted
 
 To add a game: add its entry to `games.json`, add a sketch to `internal/brand/sketch.go` until its recording is pinned, run `make site`, and commit what it wrote. When a game's recording is first pinned, give it a `recording` in `games.json`, what the recording shows for anyone who cannot see it; `make site` then removes its sketch.
 
-After a release of a game or of `tty1`, pin it, so that the site shows the manual page the release ships, and a game's recording:
+After a release of a game or of `tty1`, pin it, so that the site shows the manual page the release ships, and a game's recording and its build for a web page:
 
 ```sh
 scripts/pin.sh rustwake v0.1.0

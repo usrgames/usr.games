@@ -99,10 +99,38 @@ func recordings(t *testing.T, pins []games.Pin) map[string]bool {
 		out[pin.Name] = true
 		for _, file := range []string{pin.Name + ".gif", pin.Name + ".png"} {
 			pinned(t, pin, file)
-			named[games.Path(pin.Name, file)] = true
+			named[games.Path(pin.Name, pin.Version, file)] = true
 		}
 	}
-	for _, pattern := range []string{"site/media/*/*.gif", "site/media/*/*.png"} {
+	strays(t, named, "site/media/*/*.gif", "site/media/*/*.png")
+	return out
+}
+
+// builds returns the games that can be played in a page, with the version of their pinned
+// build. A build is served as its release shipped it, at an address that carries its version:
+// each file has to match the lock's hash, and site/play may hold no build the lock does not name.
+func builds(t *testing.T, pins []games.Pin) map[string]string {
+	t.Helper()
+	out, named := map[string]string{}, map[string]bool{}
+	for _, pin := range pins {
+		if !pin.Playable() {
+			continue
+		}
+		out[pin.Name] = pin.Version
+		for _, file := range []string{pin.Name + ".wasm.gz", "wasm_exec.js"} {
+			pinned(t, pin, file)
+			named[games.Path(pin.Name, pin.Version, file)] = true
+		}
+	}
+	strays(t, named, "site/play/*/*/*")
+	return out
+}
+
+// strays fails for a file that a pattern finds and the lock does not name. glonk's player, in
+// site/play/glonk, is not a release of the studio's and is held by a test of its own.
+func strays(t *testing.T, named map[string]bool, patterns ...string) {
+	t.Helper()
+	for _, pattern := range patterns {
 		found, err := filepath.Glob(root(pattern))
 		if err != nil {
 			t.Fatal(err)
@@ -112,18 +140,17 @@ func recordings(t *testing.T, pins []games.Pin) map[string]bool {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if rel = filepath.ToSlash(rel); !named[rel] {
+			if rel = filepath.ToSlash(rel); !named[rel] && !strings.HasPrefix(rel, "site/play/glonk/") {
 				t.Errorf("%s is pinned by nothing in games.lock.json: remove it, or pin it with scripts/pin.sh", rel)
 			}
 		}
 	}
-	return out
 }
 
 // pinned returns a pinned file as the site keeps it, and fails unless it matches its pin.
 func pinned(t *testing.T, pin games.Pin, file string) []byte {
 	t.Helper()
-	path := games.Path(pin.Name, file)
+	path := games.Path(pin.Name, pin.Version, file)
 	raw, err := os.ReadFile(root(path))
 	if err != nil {
 		t.Fatalf("games.lock.json pins %s (scripts/pin.sh %s %s writes it): %v", path, pin.Name, pin.Version, err)
@@ -313,6 +340,7 @@ func pages(t *testing.T) map[string]string {
 		t.Fatal(err)
 	}
 	mans, rec := manuals(t, pins), recordings(t, pins)
+	builds(t, pins)
 	for _, g := range list {
 		if rec[g.Name] && g.Recording == "" {
 			t.Fatalf("games.json: %s: its recording is pinned, so it needs a recording: what the recording shows, for anyone who cannot see it", g.Name)
