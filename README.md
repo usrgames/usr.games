@@ -12,6 +12,8 @@ The site of usr.games, an arcade in your terminal. It is plain files in `site/`,
 | `site/media/<game>/<game>.gif`, `.png` | A game's recording and its still, byte for byte as its release ships them. Its screens show them. Written by `scripts/pin.sh`. |
 | `site/play/<game>/<version>/` | A game's build for a web page and the `wasm_exec.js` of the Go that built it, byte for byte as its release ships them, at an address that carries the version. Written by `scripts/pin.sh`. |
 | `scripts/pin.sh` | Pins a release: it checks the studio's signature on the release's manifest and each file against it, then writes the manual page, a game's recording, its build for a web page and their hashes. CI tries it against the latest real releases, and against copies spoiled in each way it must refuse. |
+| `site/play/glonk/<version>/` | glonk's player, from that tag of glonk: `glonk.js`, which starts a game in a page, and xterm.js, its WebGL addon and its stylesheet, which draw it, with their licences. Written by `scripts/player.sh`. |
+| `scripts/player.sh` | Keeps glonk's player at one tag. A game built with a glonk whose page protocol changed needs the player of that glonk, so move the two together. |
 | `plan/` | The devlog's notes, one text file each. The page at `/plan` and its feed are made from them. |
 | `site/` | What is served. The pages and the drawings in it are made files: do not edit them by hand. |
 | `site/style.css`, `site/floor.js` | The stylesheet and the site's one script, written by hand. |

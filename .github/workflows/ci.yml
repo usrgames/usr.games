@@ -32,11 +32,11 @@ jobs:
           go-version: "1.27"
       - run: make check
       # make check skips shellcheck where there is none. Here it has to have run.
-      - name: the installer and the pin script are clean by shellcheck
+      - name: the installer and the scripts are clean by shellcheck
         run: |
           command -v shellcheck > /dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends shellcheck; }
           shellcheck --version
-          shellcheck -s sh site/install.sh scripts/pin.sh
+          shellcheck -s sh site/install.sh scripts/pin.sh scripts/player.sh
 
   # The installer as a player runs it, on each kind of machine there is a runner for: from
   # GitHub, and then against copies of the latest releases spoiled in each way it must refuse.
