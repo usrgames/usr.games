@@ -12,7 +12,7 @@ SHA256:ftIfXrwCCHVZunpdo7y85JGaI1Gl1TdoP4RDicQhXSI
 
 **The release key** signs each release's manifest, the list of a release's files with their hashes. It lives in the `release` environment of each repository that releases, where a tag `v*` and a person's approval are needed before a run can use it. The root vouches for it in a certificate, `site/etc/release-cert.pub`: for the identity `release@usr.games`, for one year.
 
-So a player holds one thing, the root's public key, and it does not change when the release key does.
+So a player holds one thing, the root's public key, and it does not change when the release key does. `tty1` has it built in, and the installer, `site/install.sh`, carries it written in; a test holds each to `allowed_signers`.
 
 ## Check a release by hand
 
@@ -59,5 +59,5 @@ Nothing a player holds changes.
 |---|---|
 | The release key is lost | Nothing is at risk. Replace it. |
 | The release key is taken | Replace it at once. Until the old certificate ends, a signature made with the old key still checks out: there is no list of revoked keys yet. |
-| The root key is lost | No certificate can be signed again. A new root is needed, and every `tty1` has to be replaced by one that knows it. |
+| The root key is lost | No certificate can be signed again. A new root is needed, and every `tty1` has to be replaced by one that knows it. The installer changes with `allowed_signers`. |
 | The root key is taken | The same, and urgently. |

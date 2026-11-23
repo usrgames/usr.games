@@ -635,7 +635,7 @@ func TestTheFrontPagesTerminalsAreOnTheTerminalsPage(t *testing.T) {
 func TestTheSiteNamesItsOperatorAndNoPerson(t *testing.T) {
 	person := regexp.MustCompile(`(?i)kyro|\bkohan\b`)
 	err := filepath.WalkDir(site, func(path string, d fs.DirEntry, err error) error {
-		if err != nil || d.IsDir() || !slices.Contains([]string{".html", ".css", ".js", ".json", ".svg", ".xml", ".txt"}, filepath.Ext(path)) {
+		if err != nil || d.IsDir() || !slices.Contains([]string{".html", ".css", ".js", ".json", ".svg", ".xml", ".txt", ".sh"}, filepath.Ext(path)) {
 			return err
 		}
 		data, err := os.ReadFile(path)
