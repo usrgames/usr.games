@@ -19,6 +19,9 @@ type Game struct {
 	Facts   string      `json:"facts"`
 	Picture string      `json:"picture"`
 	Keys    [][2]string `json:"keys"`
+	// Recording says what the game's recording shows, for anyone who cannot see it. A game
+	// whose recording is pinned needs one; until then Picture describes its sketch.
+	Recording string `json:"recording,omitempty"`
 }
 
 // Tools are the studio's modules that are not games: the launcher and the server.

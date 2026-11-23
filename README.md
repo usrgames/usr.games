@@ -32,7 +32,7 @@ make site    # draw the files and write the pages again
 make check   # format, tests, vet: fails if a made file has drifted
 ```
 
-To add a game: add its entry to `games.json`, add a sketch to `internal/brand/sketch.go` until its recording exists, run `make site`, and commit what it wrote.
+To add a game: add its entry to `games.json`, add a sketch to `internal/brand/sketch.go` until its recording is pinned, run `make site`, and commit what it wrote. When a game's recording is first pinned, give it a `recording` in `games.json`, what the recording shows for anyone who cannot see it; `make site` then removes its sketch.
 
 After a release of a game or of `tty1`, pin it, so that the site shows the manual page the release ships, and a game's recording:
 

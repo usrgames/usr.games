@@ -6,6 +6,7 @@
     "about": "Clear the rogue machines out of a dark plant, one map at a time.",
     "facts": "12 maps. Five kinds of machine. One gun, so aim.",
     "picture": "A sketch of rustwake: a corridor, a door at its end, a drone, and your gun.",
+    "recording": "rustwake playing itself: the overseer in Control fires three bolts at your gun.",
     "keys": [["W S", "walk"], ["A D", "step aside"], ["Left Right", "turn"], ["Space", "fire"], ["Esc", "pause"]]
   },
   {
