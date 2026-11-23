@@ -1,15 +1,17 @@
 #!/bin/sh
 # Pins a release of one of the studio's programs on the site: its manual page, which the site
-# shows at /man/NAME, and a game's recording, NAME.gif and its still NAME.png, which its screens
-# show. Run it after a release, from anywhere in the repository:
+# shows at /man/NAME, a game's recording, NAME.gif and its still NAME.png, which its screens
+# show, and a game's build for a web page, NAME.wasm.gz and its wasm_exec.js, which its page
+# plays. Run it after a release, from anywhere in the repository:
 #
 #   scripts/pin.sh rustwake v0.1.0
 #
 # It downloads the release's manifest and signature from GitHub and checks the signature with
 # ssh-keygen against site/etc/allowed_signers, then that the manifest is NAME's at VERSION, then
 # each file against the manifest. Only then does it put the page in man/, the recording in
-# site/media/NAME/ and their hashes in games.lock.json, in place of what was pinned for NAME
-# before. On any failure it writes nothing. Then `make site` writes the pages again.
+# site/media/NAME/, the build in site/play/NAME/VERSION/ and their hashes in games.lock.json, in
+# place of what was pinned for NAME before. On any failure it writes nothing. Then `make site`
+# writes the pages again.
 #
 # PIN_RELEASES points it elsewhere, for its test. Nothing changes whose signature it accepts.
 
@@ -78,11 +80,13 @@ sum() {
 	jq -r --arg f "$1" '[.files[] | select(.name == $f) | .sha256] | if length == 1 then .[0] else empty end' "$tmp/manifest.json"
 }
 
-# where prints where the site keeps a pinned file: a page in man/, which its page on the site is
-# made from, and a recording where the site serves it.
-where() {
+# where prints where the site keeps a file of a release at a version: a page in man/, which its
+# page on the site is made from, a recording where the site serves it, and a build at an address
+# that carries its version, so that a browser may keep it as long as it likes.
+where() { # file, version
 	case $1 in
 	*.html) printf 'man/%s\n' "$1" ;;
+	"$name.wasm.gz" | wasm_exec.js) printf 'site/play/%s/%s/%s\n' "$name" "$2" "$1" ;;
 	*) printf 'site/media/%s/%s\n' "$name" "$1" ;;
 	esac
 }
@@ -91,6 +95,11 @@ case "$(sum "$name.gif"):$(sum "$name.png")" in
 :) files=$page ;;
 ?*:?*) files="$page $name.gif $name.png" ;;
 *) fail "$name $version holds a recording without its still, or a still without its recording, so nothing was pinned." ;;
+esac
+case "$(sum "$name.wasm.gz"):$(sum wasm_exec.js)" in
+:) ;;
+?*:?*) files="$files $name.wasm.gz wasm_exec.js" ;;
+*) fail "$name $version holds a build for a web page without its wasm_exec.js, or the other way round, so nothing was pinned." ;;
 esac
 
 entry='{}'
@@ -107,18 +116,23 @@ jq -S --arg n "$name" --arg v "$version" --argjson files "$entry" \
 	'.[$n] = {version: $v, files: $files}' games.lock.json > "$tmp/lock" ||
 	fail "games.lock.json could not be read, so nothing was pinned."
 
-# What was pinned for this program before goes, so that man/ and site/media/ hold what the lock
-# names and no more.
+# What was pinned for this program before goes, so that man/, site/media/ and site/play/ hold
+# what the lock names and no more.
 old=$(jq -r --arg n "$name" '.[$n].files // {} | keys[]' games.lock.json)
+was=$(jq -r --arg n "$name" '.[$n].version // empty' games.lock.json)
 for f in $old; do
 	case $f in */* | .*) fail "games.lock.json names $f, which is not a file the site keeps, so nothing was pinned." ;; esac
 done
+case $was in
+'' | *[!v0-9.]* | .*) [ -z "$old" ] || fail "games.lock.json gives $name the version \"$was\", which is not one, so nothing was pinned." ;;
+esac
 for f in $old; do
-	rm -f "$(where "$f")"
+	rm -f "$(where "$f" "$was")"
 done
+[ -z "$was" ] || rmdir "site/play/$name/$was" 2> /dev/null || true
 for f in $files; do
-	mkdir -p "$(dirname "$(where "$f")")"
-	cp "$tmp/$f" "$(where "$f")"
+	mkdir -p "$(dirname "$(where "$f" "$version")")"
+	cp "$tmp/$f" "$(where "$f" "$version")"
 done
 cp "$tmp/lock" games.lock.json
-printf '%s\n' "Pinned $name $version: $(for f in $files; do where "$f"; done | tr '\n' ' ')" "Now run make site, and commit what it wrote."
+printf '%s\n' "Pinned $name $version: $(for f in $files; do where "$f" "$version"; done | tr '\n' ' ')" "Now run make site, and commit what it wrote."

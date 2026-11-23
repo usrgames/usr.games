@@ -77,9 +77,10 @@ jobs:
           for f in $(jq -r '.files[].name' "$RUNNER_TEMP/tty1/manifest.json"); do
             curl -fsSL -o "$RUNNER_TEMP/tty1/$f" "https://github.com/usrgames/tty1/releases/download/$v/$f"
           done
-          # Of rustwake's, only what the pin script takes: its page and its recording.
+          # Of rustwake's, only what the pin script takes: its page, its recording and its build
+          # for a web page.
           v=$(jq -r .version "$RUNNER_TEMP/rustwake/manifest.json")
-          for f in $(jq -r '.files[].name | select(test("\\.(html|gif|png)$"))' "$RUNNER_TEMP/rustwake/manifest.json"); do
+          for f in $(jq -r '.files[].name | select(test("\\.(html|gif|png|wasm\\.gz)$") or . == "wasm_exec.js")' "$RUNNER_TEMP/rustwake/manifest.json"); do
             curl -fsSL -o "$RUNNER_TEMP/rustwake/$f" "https://github.com/usrgames/rustwake/releases/download/$v/$f"
           done
       - name: the installer and the pin script refuse what they must
