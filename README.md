@@ -19,6 +19,7 @@ The site of usr.games, an arcade in your terminal. It is plain files in `site/`,
 | `KEYS.md` | What signs a release, how to check one, and how a key is renewed or replaced. |
 | `site/etc/games.json` | The list of games as the launcher, `tty1`, reads it. A made file, written from `games.json`. |
 | `site/etc/allowed_signers`, `site/etc/release-cert.pub` | The root's public key, and the certificate in which it vouches for the key that signs releases. A test holds the two together. |
+| `site/install.sh` | The installer the front page's line pipes to `sh`. It keeps `tty1` only once the studio's signature on it checks out, with the root's key written into it; a test holds that key to `allowed_signers`. Written by hand. CI tries it on macOS and Linux against the latest release, and against copies spoiled in each way it must refuse. |
 
 ## Working on it
 

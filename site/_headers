@@ -13,6 +13,10 @@
 /etc/release-cert.pub
   Content-Type: text/plain; charset=utf-8
 
+# The installer is read in a browser by anyone careful before it is piped to sh.
+/install.sh
+  Content-Type: text/plain; charset=utf-8
+
 # A preview is a draft, at an address of Cloudflare's: search engines are told not to list it.
 https://:preview.:account.workers.dev/*
   X-Robots-Tag: noindex
