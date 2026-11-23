@@ -32,15 +32,16 @@ jobs:
           go-version: "1.27"
       - run: make check
       # make check skips shellcheck where there is none. Here it has to have run.
-      - name: the installer is clean by shellcheck
+      - name: the installer and the pin script are clean by shellcheck
         run: |
           command -v shellcheck > /dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends shellcheck; }
           shellcheck --version
-          shellcheck -s sh site/install.sh
+          shellcheck -s sh site/install.sh scripts/pin.sh
 
   # The installer as a player runs it, on each kind of machine there is a runner for: from
   # GitHub, and then against copies of the latest releases spoiled in each way it must refuse.
-  # The test of that skips itself without the copies, so it is run here by name.
+  # The pin script is tried on the same copies. The tests of both skip themselves without the
+  # copies, so they are run here by name.
   installer:
     strategy:
       fail-fast: false
@@ -75,10 +76,11 @@ jobs:
           for f in $(jq -r '.files[].name' "$RUNNER_TEMP/tty1/manifest.json"); do
             curl -fsSL -o "$RUNNER_TEMP/tty1/$f" "https://github.com/usrgames/tty1/releases/download/$v/$f"
           done
-      - name: the installer refuses what it must
+      - name: the installer and the pin script refuse what they must
         env:
           TTY1_RELEASE: ${{ runner.temp }}/tty1
           RELAY_RELEASE: ${{ runner.temp }}/relay
         run: |
-          go test ./internal/sitecheck -run '^TestTheInstaller$' -count=1 -v | tee installer.txt
+          go test ./internal/sitecheck -run '^(TestTheInstaller|TestThePinScript)$' -count=1 -v | tee installer.txt
           grep -- '--- PASS: TestTheInstaller ' installer.txt
+          grep -- '--- PASS: TestThePinScript ' installer.txt
