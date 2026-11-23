@@ -1,8 +1,8 @@
 // Package sitepages writes the pages of the site, and the devlog's feed, from games.json, the
-// notes in plan/ and the templates beside this file. It has no code of its own outside its test: the pages are committed, Cloudflare serves
+// notes in plan/, the manual pages games.lock.json pins and the templates beside this file. It has no code of its own outside its test: the pages are committed, Cloudflare serves
 // them as they are, and no Go runs when the site is deployed.
 //
-// To write them again after a change to games.json, a note or a template:
+// To write them again after a change to games.json, a note, a pin or a template:
 //
 //	go test ./internal/sitepages -run TestThePagesAreWhatTheSourceSays -update
 //
@@ -11,14 +11,19 @@ package sitepages
 
 import (
 	"bytes"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"encoding/xml"
+	"errors"
 	"flag"
 	"fmt"
 	"html"
 	"html/template"
 	"os"
 	"path/filepath"
+	"regexp"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -43,9 +48,95 @@ type page struct {
 	Games    []games.Game // A to Z, as a listing prints them
 	Game     *games.Game
 	Others   []games.Game
-	Example  string        // a game to name in the launcher's examples
-	Notes    []plan.Note   // the devlog, newest first
-	Contact  template.HTML // where the notices say to write
+	Example  string            // a game to name in the launcher's examples
+	Notes    []plan.Note       // the devlog, newest first
+	Contact  template.HTML     // where the notices say to write
+	Man      map[string]string // the section of each program with a manual page on the site
+	Manuals  []manual          // every manual page, A to Z
+	Manual   *manual           // on a manual's own page, that manual
+}
+
+// manual is one pinned manual page: its program, its section, the release it came in, and its
+// text, ready to be set in a page of the site.
+type manual struct {
+	Name, Section, Version string
+	Body                   template.HTML
+}
+
+// manuals reads games.lock.json and returns the manual page of each release it pins, A to Z. A
+// page goes on the site only as its release shipped it, and scripts/pin.sh checked that release:
+// its file in man/ has to match the lock's hash, and man/ may hold nothing the lock does not name.
+func manuals(t *testing.T, modules []string) []manual {
+	t.Helper()
+	data, err := os.ReadFile(root("games.lock.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var lock map[string]struct {
+		Version string            `json:"version"`
+		Files   map[string]string `json:"files"`
+	}
+	dec := json.NewDecoder(bytes.NewReader(data))
+	dec.DisallowUnknownFields()
+	if err := dec.Decode(&lock); err != nil {
+		t.Fatalf("games.lock.json: %v", err)
+	}
+	named := map[string]bool{}
+	var out []manual
+	for name, pin := range lock {
+		if !slices.Contains(modules, name) {
+			t.Fatalf("games.lock.json: %q is neither a game of games.json nor one of the tools", name)
+		}
+		if !regexp.MustCompile(`^v[0-9]+\.[0-9]+\.[0-9]+$`).MatchString(pin.Version) {
+			t.Fatalf("games.lock.json: %s: wanted a version such as v0.1.0, got %q", name, pin.Version)
+		}
+		page := regexp.MustCompile(`^` + regexp.QuoteMeta(name) + `\.([1-9])\.html$`)
+		if len(pin.Files) != 1 {
+			t.Fatalf("games.lock.json: %s: wanted one file, its manual page, got %d", name, len(pin.Files))
+		}
+		for file, sum := range pin.Files {
+			named[file] = true
+			section := page.FindStringSubmatch(file)
+			if section == nil {
+				t.Fatalf("games.lock.json: %s pins %s, which is not its manual page", name, file)
+			}
+			raw, err := os.ReadFile(root("man/" + file))
+			if err != nil {
+				t.Fatalf("games.lock.json pins man/%s (scripts/pin.sh %s %s writes it): %v", file, name, pin.Version, err)
+			}
+			if got := sha256.Sum256(raw); hex.EncodeToString(got[:]) != sum {
+				t.Fatalf("man/%s is not the page games.lock.json pins: run scripts/pin.sh %s %s to pin it again", file, name, pin.Version)
+			}
+			out = append(out, manual{Name: name, Section: section[1], Version: pin.Version, Body: body(t, file, raw)})
+		}
+	}
+	files, err := os.ReadDir(root("man"))
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		t.Fatal(err)
+	}
+	for _, f := range files {
+		if !named[f.Name()] {
+			t.Errorf("man/%s is pinned by nothing in games.lock.json: remove it, or pin it with scripts/pin.sh", f.Name())
+		}
+	}
+	slices.SortFunc(out, func(a, b manual) int { return strings.Compare(a.Name, b.Name) })
+	return out
+}
+
+// body returns the text of a manual page as mandoc writes it, to be set in a page of the site:
+// what is between mandoc's head, with its style block the site's policy refuses, and its foot,
+// which names the machine mandoc ran on. Each heading goes one level down, under the page's
+// own h1.
+func body(t *testing.T, file string, raw []byte) template.HTML {
+	t.Helper()
+	const start, end = `<div class="manual-text">`, "</div>\n<table class=\"foot\">"
+	s := string(raw)
+	i, j := strings.Index(s, start), strings.LastIndex(s, end)
+	if i < 0 || j < i || strings.Count(s, start) != 1 {
+		t.Fatalf("man/%s: wanted a page as mandoc writes it, with one %s and its foot after it", file, start)
+	}
+	down := strings.NewReplacer("<h1", "<h2", "</h1>", "</h2>", "<h2", "<h3", "</h2>", "</h3>")
+	return template.HTML(down.Replace(s[i+len(start) : j]))
 }
 
 // contact is the address the notices give. Cloudflare rewrites an email address it finds in a
@@ -198,8 +289,13 @@ func pages(t *testing.T) map[string]string {
 	if len(list) == 1 {
 		count = "1 game."
 	}
+	mans := manuals(t, modules)
+	man := map[string]string{}
+	for _, m := range mans {
+		man[m.Name] = m.Section
+	}
 	base := func(title, text, source string) page {
-		return page{Title: title, GoTags: goTags(modules, source), Describe: describe(title, text, false), Games: sorted, Count: count, Example: list[0].Name}
+		return page{Title: title, GoTags: goTags(modules, source), Describe: describe(title, text, false), Games: sorted, Count: count, Example: list[0].Name, Man: man}
 	}
 
 	out := map[string]string{}
@@ -231,6 +327,16 @@ func pages(t *testing.T) map[string]string {
 	render("tty1.html", "tty1", base("tty1: the usr.games launcher", "One command that installs the games, keeps them current, and starts them.", "tty1"))
 	render("arcade.html", "arcade", base("arcade: the usr.games server", "What the arcade's server does, and what it keeps.", "arcade"))
 	render("terminals.html", "terminals", base("Bring a good terminal: usr.games", "Which terminals show the games at their best, and what you see in the others.", ""))
+	index := base("The manual: usr.games", "The manual pages of the games and of tty1, as each release ships them.", "")
+	index.Manuals = mans
+	render("man.html", "manindex", index)
+	for i := range mans {
+		m := &mans[i]
+		name := m.Name + "(" + m.Section + ")"
+		p := base("The manual of "+name+": usr.games", "The manual page of "+name+", as its release "+m.Version+" ships it.", "")
+		p.Manual = m
+		render("man/"+m.Name+".html", "man", p)
+	}
 	devlog := base("The plan: usr.games", "What we are building at usr.games, one part at a time. Newest first.", "")
 	devlog.Notes = notes
 	render("plan.html", "plan", devlog)
@@ -252,6 +358,9 @@ func TestThePagesAreWhatTheSourceSays(t *testing.T) {
 	for path, want := range pages(t) {
 		file := root("site/" + path)
 		if *update {
+			if err := os.MkdirAll(filepath.Dir(file), 0o755); err != nil {
+				t.Fatal(err)
+			}
 			if err := os.WriteFile(file, []byte(want), 0o644); err != nil {
 				t.Fatal(err)
 			}
@@ -272,18 +381,21 @@ func TestThePagesAreWhatTheSourceSays(t *testing.T) {
 // that has gone: either way it would be served, and stale.
 func TestEveryPageOfTheSiteIsWrittenHere(t *testing.T) {
 	made := pages(t)
-	found, err := filepath.Glob(root("site/*.html"))
-	if err != nil {
-		t.Fatal(err)
+	var found []string
+	for _, pattern := range []string{"site/*.html", "site/*.xml", "site/man/*.html"} {
+		files, err := filepath.Glob(root(pattern))
+		if err != nil {
+			t.Fatal(err)
+		}
+		found = append(found, files...)
 	}
-	feeds, err := filepath.Glob(root("site/*.xml"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	found = append(found, feeds...)
 	for _, file := range found {
-		if _, ok := made[filepath.Base(file)]; !ok {
-			t.Errorf("site/%s is written by nothing here: remove it, or add it to the pages", filepath.Base(file))
+		rel, err := filepath.Rel(root("site"), file)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, ok := made[filepath.ToSlash(rel)]; !ok {
+			t.Errorf("site/%s is written by nothing here: remove it, or add it to the pages", filepath.ToSlash(rel))
 		}
 	}
 }

@@ -85,6 +85,24 @@ ul.cols { padding: 0; margin-bottom: 0; list-style: none; }
 .doc h1.hot { font-size: 30px; line-height: 1.1; }
 h2 a { text-decoration-thickness: 1px; }
 
+/* A manual page, as mandoc writes it, shown the way a terminal shows one: bold in the bright
+   voice, italic underlined, and each item's text indented under it. */
+.manual { display: flex; flex-direction: column; gap: 22px; }
+.manual h2 { margin-bottom: 0; }
+.manual h3 { margin: 0; font: inherit; color: var(--hot); }
+.manual section > * + * { margin-top: 8px; }
+.manual .permalink { text-decoration: none; }
+.manual code, .manual var { font: inherit; }
+/* A flag is never broken at its hyphen. */
+.manual code { white-space: nowrap; }
+.manual .Nm, .manual .Fl, .manual .Cm, .manual .Ic, .manual b { color: var(--hot); font-weight: inherit; text-shadow: 0 0 10px #d6ffe4aa; }
+.manual var, .manual i { font-style: normal; text-decoration: underline; text-underline-offset: 4px; }
+.manual dd { margin-left: 4ch; }
+.manual dd + dt { margin-top: 8px; }
+.manual table { border-collapse: collapse; }
+.manual td { padding: 0 1ch 0 0; vertical-align: top; }
+.manual ol, .manual ul { margin-bottom: 0; padding-left: 4ch; }
+
 .foot { margin-top: 44px; padding-top: 18px; border-top: 2px dashed #2fd16a66; }
 .foot .ls { display: flex; flex-wrap: wrap; gap: 0 3ch; }
 .foot .ls + p { margin-top: 12px; }

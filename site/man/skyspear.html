@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="go-import" content="usr.games/rustwake git https://github.com/usrgames/rustwake">
+<meta name="go-import" content="usr.games/skyspear git https://github.com/usrgames/skyspear">
+<meta name="go-import" content="usr.games/breakshot git https://github.com/usrgames/breakshot">
+<meta name="go-import" content="usr.games/tty1 git https://github.com/usrgames/tty1">
+<meta name="go-import" content="usr.games/arcade git https://github.com/usrgames/arcade">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The manual of skyspear(6): usr.games</title>
+<meta name="description" content="The manual page of skyspear(6), as its release v1.0.0 ships it.">
+<link rel="preload" href="/media/fonts/VT323-Regular.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="stylesheet" href="/style.css">
+<link rel="alternate" type="application/atom+xml" title="usr.games: the plan" href="/plan.xml">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the page</a>
+<div class="tube">
+<header class="mast">
+  <a class="sign" href="/"><img src="/sign.svg" alt="usr.games, the front page" width="720" height="80"></a>
+</header>
+<main id="main" class="doc">
+  <div>
+    <h1 class="hot">skyspear(6)</h1>
+    <p class="about">The manual page that comes home with <a href="/skyspear">skyspear</a> v1.0.0.</p>
+  </div>
+  <p><span class="dim">$</span> tty1 man skyspear</p>
+  <div class="manual">
+<section class="Sh">
+<h2 class="Sh" id="NAME"><a class="permalink" href="#NAME">NAME</a></h2>
+<p class="Pp"><code class="Nm">skyspear</code> &#x2014; <span class="Nd">a
+    prehistoric lost world in the terminal</span></p>
+</section>
+<section class="Sh">
+<h2 class="Sh" id="SYNOPSIS"><a class="permalink" href="#SYNOPSIS">SYNOPSIS</a></h2>
+<table class="Nm">
+  <tr>
+    <td><code class="Nm">skyspear</code></td>
+    <td>[<code class="Fl">-mouse</code>=<var class="Ar">bool</var>]
+      [<code class="Fl">-mute</code>] [<code class="Fl">-seed</code>
+      <var class="Ar">n</var>] [<code class="Fl">-shot</code>
+      <var class="Ar">file.png</var>] [<code class="Fl">-world</code>
+      <var class="Ar">folder</var>] [<code class="Fl">-worlds</code>
+      <var class="Ar">folder</var>]</td>
+  </tr>
+</table>
+<br/>
+<table class="Nm">
+  <tr>
+    <td><code class="Nm">skyspear</code></td>
+    <td><code class="Fl">-version</code></td>
+  </tr>
+</table>
+</section>
+<section class="Sh">
+<h2 class="Sh" id="DESCRIPTION"><a class="permalink" href="#DESCRIPTION">DESCRIPTION</a></h2>
+<p class="Pp"><code class="Nm">skyspear</code> is a block-building game of a
+    prehistoric lost world, drawn in the terminal. You are a cave person among
+    dinosaurs, fire mountains and falling stars, and you begin with nothing.
+    Each night a comet grows among the stars, and on the twelfth it arrives.
+    Make fire, hunt or hide, paint what you have met, and win the trust of a
+    camp until its people come to live at your fire. The art and the sounds are
+    made by code.</p>
+<p class="Pp">A world has no end and is made from a seed. It is played in one of
+    two ways, chosen when it is made:</p>
+<dl class="Bl-tag">
+  <dt>survival</dt>
+  <dd>You dig what you need, carry it, eat and stay alive. The first night is
+      quiet; from the second, hunters come in the dark.</dd>
+  <dt>creative</dt>
+  <dd>Every block is at hand, and nothing hurts you.</dd>
+</dl>
+<p class="Pp">The title lists the worlds, the last played first. Choose one to
+    play it or to delete it, or make a new one: it asks for a name, a seed, and
+    how it is played. A world is saved when you leave it, and also on
+    <code class="Ic">Ctrl-C</code> or when the window closes.</p>
+<p class="Pp">Use a terminal that reports key releases, such as Ghostty, kitty,
+    WezTerm, foot, iTerm2 or Alacritty: there you can walk and turn at once. In
+    other terminals only one key stays held at a time, and the game says so.
+    Every cell is two pixels, so a bigger window is a sharper picture, and true
+    color looks best.</p>
+<p class="Pp">The options are as follows:</p>
+<dl class="Bl-tag">
+  <dt id="mouse"><a class="permalink" href="#mouse"><code class="Fl">-mouse</code></a>=<var class="Ar">bool</var></dt>
+  <dd>With <code class="Cm">false</code>, leave the pointer to the terminal, to
+      select text. The default is <code class="Cm">true</code>: the mouse aims,
+      breaks and places.</dd>
+  <dt id="mute"><a class="permalink" href="#mute"><code class="Fl">-mute</code></a></dt>
+  <dd>Play with no sound, and leave the sound device alone. A machine with no
+      sound device plays in silence too.</dd>
+  <dt id="seed"><a class="permalink" href="#seed"><code class="Fl">-seed</code></a>
+    <var class="Ar">n</var></dt>
+  <dd>The number a new world is made from, offered as its seed. The same number
+      makes the same world. 0, the default, takes one from the clock.</dd>
+  <dt id="shot"><a class="permalink" href="#shot"><code class="Fl">-shot</code></a>
+    <var class="Ar">file.png</var></dt>
+  <dd>Draw one frame of play into a PNG and quit, without a terminal.</dd>
+  <dt id="world"><a class="permalink" href="#world"><code class="Fl">-world</code></a>
+    <var class="Ar">folder</var></dt>
+  <dd>Play only the world in <var class="Ar">folder</var>, with no list.</dd>
+  <dt id="worlds"><a class="permalink" href="#worlds"><code class="Fl">-worlds</code></a>
+    <var class="Ar">folder</var></dt>
+  <dd>List the worlds in <var class="Ar">folder</var> in place of the usual one;
+      see <a class="Sx" href="#FILES">FILES</a>.</dd>
+  <dt id="version"><a class="permalink" href="#version"><code class="Fl">-version</code></a></dt>
+  <dd>Print the version and quit.</dd>
+</dl>
+</section>
+<section class="Sh">
+<h2 class="Sh" id="KEYS"><a class="permalink" href="#KEYS">KEYS</a></h2>
+<dl class="Bl-tag">
+  <dt id="W"><a class="permalink" href="#W"><code class="Ic">W A S
+    D</code></a></dt>
+  <dd>Walk and strafe. In a galewing's glide, <code class="Ic">W</code> dives
+      and <code class="Ic">A</code> and <code class="Ic">D</code> turn.</dd>
+  <dt>arrow keys</dt>
+  <dd>Look.</dd>
+  <dt id="Space"><a class="permalink" href="#Space"><code class="Ic">Space</code></a></dt>
+  <dd>Jump, swim up, or rise when flying. On a beast you ride, jump or
+    charge.</dd>
+  <dt id="X"><a class="permalink" href="#X"><code class="Ic">X</code></a></dt>
+  <dd>Sink when flying.</dd>
+  <dt id="F"><a class="permalink" href="#F"><code class="Ic">F</code></a></dt>
+  <dd>Flying on and off, in creative.</dd>
+  <dt id="C"><a class="permalink" href="#C"><code class="Ic">C</code></a></dt>
+  <dd>Crouch, and stand again: slow, low and quiet. On a beast you ride, get
+      down; in a glide, let go.</dd>
+  <dt id="V"><a class="permalink" href="#V"><code class="Ic">V</code></a></dt>
+  <dd>See through your eyes, or from behind your shoulder.</dd>
+  <dt id="L"><a class="permalink" href="#L"><code class="Ic">L</code></a></dt>
+  <dd>The next of sixteen looks for your body.</dd>
+  <dt id="Q"><a class="permalink" href="#Q"><code class="Ic">Q</code></a></dt>
+  <dd>Break the block aimed at, or hit the creature aimed at; held, it goes
+    on.</dd>
+  <dt id="E"><a class="permalink" href="#E"><code class="Ic">E</code></a></dt>
+  <dd>Place the block aimed at, and use what is aimed at with what is in your
+      hand: eat, feed a young beast, get on a beast of yours, paint a face of
+      rock or read a painting, open a clay pot or a hearth, lie down on a fur
+      bed, or light torches at a fire. Held with a fire drill on a hearth, it
+      lights the hearth. Pressed on a person, it shows them what you hold, to
+      trade; crouched, it gives it.</dd>
+  <dt id="R"><a class="permalink" href="#R"><code class="Ic">R</code></a></dt>
+  <dd>Throw the spear in your hand, or with a sling a pebble; held, it goes
+    on.</dd>
+  <dt id="1"><a class="permalink" href="#1"><code class="Ic">1</code></a>
+    <span class="No">to</span> <code class="Ic">9</code>,
+    <code class="Ic">Tab</code></dt>
+  <dd>Pick a slot of the hotbar, or the next one.</dd>
+  <dt id="I"><a class="permalink" href="#I"><code class="Ic">I</code></a></dt>
+  <dd>Your things: move them between the hotbar and the pack, and make things
+      from them.</dd>
+  <dt id="T"><a class="permalink" href="#T"><code class="Ic">T</code></a></dt>
+  <dd>Move the clock on six hours.</dd>
+  <dt id="F3"><a class="permalink" href="#F3"><code class="Ic">F3</code></a></dt>
+  <dd>Frame numbers, the seed, the day and the hour, and the days until the
+      comet arrives.</dd>
+  <dt id="Esc"><a class="permalink" href="#Esc"><code class="Ic">Esc</code></a></dt>
+  <dd>The pause menu, with these keys on it; on a menu, back.</dd>
+  <dt id="Ctrl-C"><a class="permalink" href="#Ctrl-C"><code class="Ic">Ctrl-C</code></a></dt>
+  <dd>Save and quit.</dd>
+</dl>
+<p class="Pp">Letters work in either case.</p>
+</section>
+<section class="Sh">
+<h2 class="Sh" id="MOUSE"><a class="permalink" href="#MOUSE">MOUSE</a></h2>
+<p class="Pp">Whichever was used last aims: move or click the mouse and the
+    pointer aims, press an arrow key and the middle of the view aims again.</p>
+<dl class="Bl-tag">
+  <dt>left button</dt>
+  <dd>Break, or hit; held still, it goes on. Held and dragged, it turns the
+      view, a cell at a time.</dd>
+  <dt>right button</dt>
+  <dd>Place.</dd>
+  <dt>wheel</dt>
+  <dd>Pick a slot of the hotbar.</dd>
+</dl>
+<p class="Pp">A click on a slot of the hotbar picks it, a click in the bag takes
+    or puts down what is in a slot, and a click on a menu chooses a line.</p>
+</section>
+<section class="Sh">
+<h2 class="Sh" id="ENVIRONMENT"><a class="permalink" href="#ENVIRONMENT">ENVIRONMENT</a></h2>
+<dl class="Bl-tag">
+  <dt id="COLORTERM"><a class="permalink" href="#COLORTERM"><code class="Ev">COLORTERM</code></a></dt>
+  <dd><a class="permalink" href="#truecolor"><code class="Cm" id="truecolor">truecolor</code></a>
+      or <code class="Cm">24bit</code> draws in true color. Inside tmux or over
+      ssh, set it if the terminal can show true color.</dd>
+  <dt id="TERM"><a class="permalink" href="#TERM"><code class="Ev">TERM</code></a></dt>
+  <dd>Read with <code class="Ev">COLORTERM</code> to choose the colors.</dd>
+  <dt id="HOME"><a class="permalink" href="#HOME"><code class="Ev">HOME</code></a></dt>
+  <dd>Where the config folder is, on macOS and on Linux.</dd>
+  <dt id="XDG_CONFIG_HOME"><a class="permalink" href="#XDG_CONFIG_HOME"><code class="Ev">XDG_CONFIG_HOME</code></a></dt>
+  <dd>On Linux, the config folder, in place of
+      <span class="Pa">~/.config</span>.</dd>
+</dl>
+</section>
+<section class="Sh">
+<h2 class="Sh" id="FILES"><a class="permalink" href="#FILES">FILES</a></h2>
+<p class="Pp">The config folder is <span class="Pa">~/Library/Application
+    Support</span> on macOS and <span class="Pa">~/.config</span> on Linux.</p>
+<dl class="Bl-tag">
+  <dt><span class="Pa">skyspear/worlds/</span></dt>
+  <dd>The worlds, one folder each, named as the world was named. Each holds
+      <span class="Pa">world.json</span> and one small file for each chunk that
+      was changed; the rest of a world is made again from its seed.</dd>
+  <dt><span class="Pa">skyspear/settings.json</span></dt>
+  <dd>The settings: mouse speed, view distance, field of view, volume, whether
+      the view shakes, and the view last chosen.</dd>
+</dl>
+</section>
+<section class="Sh">
+<h2 class="Sh" id="EXIT_STATUS"><a class="permalink" href="#EXIT_STATUS">EXIT
+  STATUS</a></h2>
+<p class="Pp">The <code class="Nm">skyspear</code> utility exits&#x00A0;0 on
+    success, and&#x00A0;&gt;0 if an error occurs.</p>
+</section>
+<section class="Sh">
+<h2 class="Sh" id="SEE_ALSO"><a class="permalink" href="#SEE_ALSO">SEE
+  ALSO</a></h2>
+<p class="Pp">The README, at
+    <a class="Lk" href="https://github.com/usrgames/skyspear">https://github.com/usrgames/skyspear</a>,
+    holds the whole of the game's rules.</p>
+</section>
+</div>
+</main>
+<footer class="foot">
+  <p class="dim">$ ls /usr/share/games</p>
+  <p class="ls"><a href="/tty1">tty1</a><a href="/arcade">arcade</a><a href="/man">man</a><a href="/terminals">terminals</a><a href="/plan">plan</a><a href="/privacy">privacy</a><a href="/terms">terms</a></p>
+  <p class="dim">Built on <a href="https://glonk.dev">glonk</a>. A directory since 1971. A studio since 2026. Operated by KOHANTIC LLC.</p>
+</footer>
+</div>
+</body>
+</html>
