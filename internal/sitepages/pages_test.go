@@ -22,8 +22,6 @@ import (
 	"html/template"
 	"os"
 	"path/filepath"
-	"regexp"
-	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -68,47 +66,16 @@ type manual struct {
 // its file in man/ has to match the lock's hash, and man/ may hold nothing the lock does not name.
 func manuals(t *testing.T, modules []string) []manual {
 	t.Helper()
-	data, err := os.ReadFile(root("games.lock.json"))
+	pins, err := games.LoadLock(root("games.lock.json"), modules)
 	if err != nil {
 		t.Fatal(err)
 	}
-	var lock map[string]struct {
-		Version string            `json:"version"`
-		Files   map[string]string `json:"files"`
-	}
-	dec := json.NewDecoder(bytes.NewReader(data))
-	dec.DisallowUnknownFields()
-	if err := dec.Decode(&lock); err != nil {
-		t.Fatalf("games.lock.json: %v", err)
-	}
 	named := map[string]bool{}
 	var out []manual
-	for name, pin := range lock {
-		if !slices.Contains(modules, name) {
-			t.Fatalf("games.lock.json: %q is neither a game of games.json nor one of the tools", name)
-		}
-		if !regexp.MustCompile(`^v[0-9]+\.[0-9]+\.[0-9]+$`).MatchString(pin.Version) {
-			t.Fatalf("games.lock.json: %s: wanted a version such as v0.1.0, got %q", name, pin.Version)
-		}
-		page := regexp.MustCompile(`^` + regexp.QuoteMeta(name) + `\.([1-9])\.html$`)
-		if len(pin.Files) != 1 {
-			t.Fatalf("games.lock.json: %s: wanted one file, its manual page, got %d", name, len(pin.Files))
-		}
-		for file, sum := range pin.Files {
-			named[file] = true
-			section := page.FindStringSubmatch(file)
-			if section == nil {
-				t.Fatalf("games.lock.json: %s pins %s, which is not its manual page", name, file)
-			}
-			raw, err := os.ReadFile(root("man/" + file))
-			if err != nil {
-				t.Fatalf("games.lock.json pins man/%s (scripts/pin.sh %s %s writes it): %v", file, name, pin.Version, err)
-			}
-			if got := sha256.Sum256(raw); hex.EncodeToString(got[:]) != sum {
-				t.Fatalf("man/%s is not the page games.lock.json pins: run scripts/pin.sh %s %s to pin it again", file, name, pin.Version)
-			}
-			out = append(out, manual{Name: name, Section: section[1], Version: pin.Version, Body: body(t, file, raw)})
-		}
+	for _, pin := range pins {
+		file, section := pin.Manual()
+		named[file] = true
+		out = append(out, manual{Name: pin.Name, Section: section, Version: pin.Version, Body: body(t, file, pinned(t, pin, file))})
 	}
 	files, err := os.ReadDir(root("man"))
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
@@ -119,8 +86,21 @@ func manuals(t *testing.T, modules []string) []manual {
 			t.Errorf("man/%s is pinned by nothing in games.lock.json: remove it, or pin it with scripts/pin.sh", f.Name())
 		}
 	}
-	slices.SortFunc(out, func(a, b manual) int { return strings.Compare(a.Name, b.Name) })
 	return out
+}
+
+// pinned returns a pinned file as the site keeps it, and fails unless it matches its pin.
+func pinned(t *testing.T, pin games.Pin, file string) []byte {
+	t.Helper()
+	path := "man/" + file
+	raw, err := os.ReadFile(root(path))
+	if err != nil {
+		t.Fatalf("games.lock.json pins %s (scripts/pin.sh %s %s writes it): %v", path, pin.Name, pin.Version, err)
+	}
+	if got := sha256.Sum256(raw); hex.EncodeToString(got[:]) != pin.Files[file] {
+		t.Fatalf("%s is not the file games.lock.json pins: run scripts/pin.sh %s %s to pin it again", path, pin.Name, pin.Version)
+	}
+	return raw
 }
 
 // body returns the text of a manual page as mandoc writes it, to be set in a page of the site:
