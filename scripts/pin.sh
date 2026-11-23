@@ -1,14 +1,15 @@
 #!/bin/sh
 # Pins a release of one of the studio's programs on the site: its manual page, which the site
-# shows at /man/NAME. Run it after a release, from anywhere in the repository:
+# shows at /man/NAME, and a game's recording, NAME.gif and its still NAME.png, which its screens
+# show. Run it after a release, from anywhere in the repository:
 #
 #   scripts/pin.sh rustwake v0.1.0
 #
 # It downloads the release's manifest and signature from GitHub and checks the signature with
 # ssh-keygen against site/etc/allowed_signers, then that the manifest is NAME's at VERSION, then
-# the page against the manifest. Only then does it put the page in man/ and its hash in
-# games.lock.json, in place of what was pinned for NAME before. On any failure it writes
-# nothing. Then `make site` writes the pages again.
+# each file against the manifest. Only then does it put the page in man/, the recording in
+# site/media/NAME/ and their hashes in games.lock.json, in place of what was pinned for NAME
+# before. On any failure it writes nothing. Then `make site` writes the pages again.
 #
 # PIN_RELEASES points it elsewhere, for its test. Nothing changes whose signature it accepts.
 
@@ -71,26 +72,53 @@ jq -e --arg n "$name" --arg v "$version" '.schema == 1 and .name == $n and .vers
 
 page=$(jq -r --arg n "$name" '[.files[].name | select(test("^" + $n + "\\.[1-9]\\.html$"))] | if length == 1 then .[0] else empty end' "$tmp/manifest.json")
 [ -n "$page" ] || fail "$name $version holds no manual page, or more than one, so nothing was pinned."
-want=$(jq -r --arg p "$page" '.files[] | select(.name == $p) | .sha256' "$tmp/manifest.json")
-printf '%s\n' "$want" | grep -Eq '^[0-9a-f]{64}$' || fail "The manifest gives $page no hash, so nothing was pinned."
 
-get "$at/$page" "$tmp/$page"
-[ "$(sha256 "$tmp/$page")" = "$want" ] ||
-	fail "The $page downloaded is not the one the studio signed for, so nothing was pinned."
+# sum prints the hash the manifest gives a file, or nothing if it does not list the file once.
+sum() {
+	jq -r --arg f "$1" '[.files[] | select(.name == $f) | .sha256] | if length == 1 then .[0] else empty end' "$tmp/manifest.json"
+}
 
-jq -S --arg n "$name" --arg v "$version" --arg p "$page" --arg h "$want" \
-	'.[$n] = {version: $v, files: {($p): $h}}' games.lock.json > "$tmp/lock" ||
+# where prints where the site keeps a pinned file: a page in man/, which its page on the site is
+# made from, and a recording where the site serves it.
+where() {
+	case $1 in
+	*.html) printf 'man/%s\n' "$1" ;;
+	*) printf 'site/media/%s/%s\n' "$name" "$1" ;;
+	esac
+}
+
+case "$(sum "$name.gif"):$(sum "$name.png")" in
+:) files=$page ;;
+?*:?*) files="$page $name.gif $name.png" ;;
+*) fail "$name $version holds a recording without its still, or a still without its recording, so nothing was pinned." ;;
+esac
+
+entry='{}'
+for f in $files; do
+	want=$(sum "$f")
+	printf '%s\n' "$want" | grep -Eq '^[0-9a-f]{64}$' || fail "The manifest gives $f no hash, so nothing was pinned."
+	get "$at/$f" "$tmp/$f"
+	[ "$(sha256 "$tmp/$f")" = "$want" ] ||
+		fail "The $f downloaded is not the one the studio signed for, so nothing was pinned."
+	entry=$(printf '%s' "$entry" | jq -c --arg f "$f" --arg h "$want" '. + {($f): $h}')
+done
+
+jq -S --arg n "$name" --arg v "$version" --argjson files "$entry" \
+	'.[$n] = {version: $v, files: $files}' games.lock.json > "$tmp/lock" ||
 	fail "games.lock.json could not be read, so nothing was pinned."
 
-# What was pinned for this program before goes, so that man/ holds what the lock names and no more.
+# What was pinned for this program before goes, so that man/ and site/media/ hold what the lock
+# names and no more.
 old=$(jq -r --arg n "$name" '.[$n].files // {} | keys[]' games.lock.json)
 for f in $old; do
-	case $f in */* | .*) fail "games.lock.json names $f, which is not a file of man/, so nothing was pinned." ;; esac
+	case $f in */* | .*) fail "games.lock.json names $f, which is not a file the site keeps, so nothing was pinned." ;; esac
 done
 for f in $old; do
-	rm -f "man/$f"
+	rm -f "$(where "$f")"
 done
-mkdir -p man
-cp "$tmp/$page" "man/$page"
+for f in $files; do
+	mkdir -p "$(dirname "$(where "$f")")"
+	cp "$tmp/$f" "$(where "$f")"
+done
 cp "$tmp/lock" games.lock.json
-printf '%s\n' "Pinned $name $version: man/$page. Now run make site, and commit what it wrote."
+printf '%s\n' "Pinned $name $version: $(for f in $files; do where "$f"; done | tr '\n' ' ')" "Now run make site, and commit what it wrote."

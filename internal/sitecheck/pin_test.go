@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"io/fs"
 	"maps"
 	"os"
 	"os/exec"
@@ -16,43 +17,76 @@ import (
 	"time"
 )
 
-// scripts/pin.sh is how a release's manual page comes onto the site: the page is kept only once
-// the studio's signature on the release's manifest checks out, and the page against it. It is
-// not served, but it decides what is, so it is tried here as the installer is: on copies of the
-// latest real releases of tty1 and the relay, which CI downloads into the folders TTY1_RELEASE
-// and RELAY_RELEASE name, and runs this by name.
+// scripts/pin.sh is how a release's manual page, and a game's recording, come onto the site:
+// each file is kept only once the studio's signature on the release's manifest checks out, and
+// the file against it. It is not served, but it decides what is, so it is tried here as the
+// installer is: on copies of the latest real releases of tty1, the relay and rustwake, which CI
+// downloads into the folders TTY1_RELEASE, RELAY_RELEASE and RUSTWAKE_RELEASE name, and runs
+// this by name.
 func TestThePinScript(t *testing.T) {
-	tty1, relay := os.Getenv("TTY1_RELEASE"), os.Getenv("RELAY_RELEASE")
-	if tty1 == "" || relay == "" {
-		t.Skip("TTY1_RELEASE and RELAY_RELEASE name no copies of the latest releases of tty1 and the relay")
+	tty1, relay, rustwake := os.Getenv("TTY1_RELEASE"), os.Getenv("RELAY_RELEASE"), os.Getenv("RUSTWAKE_RELEASE")
+	if tty1 == "" || relay == "" || rustwake == "" {
+		t.Skip("TTY1_RELEASE, RELAY_RELEASE and RUSTWAKE_RELEASE name no copies of the latest releases of tty1, the relay and rustwake")
 	}
 	version := manifestOf(t, tty1).Version
 	page, sum := manualOf(t, tty1)
+	a, b := strings.Repeat("a", 64), strings.Repeat("b", 64)
 
 	t.Run("it pins the page the studio signed", func(t *testing.T) {
 		p := newPin(t, "{}\n")
 		p.serve(tty1, "tty1", version)
 		p.pinned("tty1", version)
-		if got := p.files(); len(got) != 1 || got[page] != string(readFile(t, filepath.Join(tty1, page))) {
-			t.Errorf("wanted man/ to hold %s as the release has it, and nothing else, got %d files", page, len(got))
+		if got := p.files(); len(got) != 1 || got["man/"+page] != string(readFile(t, filepath.Join(tty1, page))) {
+			t.Errorf("wanted man/%s as the release has it, and nothing else, got %v", page, slices.Collect(maps.Keys(got)))
 		}
 		if got, want := p.lock(), map[string]pin{"tty1": {Version: version, Files: map[string]string{page: sum}}}; !equalPins(got, want) {
 			t.Errorf("wanted games.lock.json to be %v, got %v", want, got)
 		}
 	})
 
+	t.Run("it pins a game's recording beside its page", func(t *testing.T) {
+		m := manifestOf(t, rustwake)
+		p := newPin(t, "{}\n")
+		p.serve(rustwake, "rustwake", m.Version)
+		p.pinned("rustwake", m.Version)
+		want := map[string]string{}
+		for _, f := range m.Files {
+			if f.Name == "rustwake.gif" || f.Name == "rustwake.png" || strings.HasSuffix(f.Name, ".html") {
+				want[f.Name] = f.SHA256
+			}
+		}
+		got := p.files()
+		for _, kept := range []string{"man/rustwake.6.html", "site/media/rustwake/rustwake.gif", "site/media/rustwake/rustwake.png"} {
+			if got[kept] != string(readFile(t, filepath.Join(rustwake, filepath.Base(kept)))) {
+				t.Errorf("wanted %s as the release has it", kept)
+			}
+		}
+		if len(got) != 3 || len(want) != 3 {
+			t.Errorf("wanted the page, the recording and its still, and nothing else, got %v", slices.Collect(maps.Keys(got)))
+		}
+		if got := p.lock(); !equalPins(got, map[string]pin{"rustwake": {Version: m.Version, Files: want}}) {
+			t.Errorf("wanted games.lock.json to name the three files, got %v", got)
+		}
+	})
+
 	t.Run("it pins over what was pinned before, and leaves the rest", func(t *testing.T) {
-		p := newPin(t, `{"rustwake": {"files": {"rustwake.6.html": "`+strings.Repeat("a", 64)+`"}, "version": "v0.1.0"}, "tty1": {"files": {"tty1.8.html": "`+strings.Repeat("b", 64)+`"}, "version": "v0.0.1"}}`+"\n")
-		write(t, filepath.Join(p.root, "man", "rustwake.6.html"), []byte("rustwake's"), 0o644)
-		write(t, filepath.Join(p.root, "man", "tty1.8.html"), []byte("an older tty1's"), 0o644)
+		p := newPin(t, `{"rustwake": {"files": {"rustwake.6.html": "`+a+`"}, "version": "v0.1.0"}, "tty1": {"files": {"tty1.8.html": "`+b+`", "tty1.gif": "`+b+`", "tty1.png": "`+b+`"}, "version": "v0.0.1"}}`+"\n")
+		for path, text := range map[string]string{
+			"man/rustwake.6.html": "rustwake's", "man/tty1.8.html": "an older tty1's",
+			"site/media/tty1/tty1.gif": "an older recording", "site/media/tty1/tty1.png": "an older still", "site/media/tty1/name.svg": "the name",
+		} {
+			write(t, filepath.Join(p.root, filepath.FromSlash(path)), []byte(text), 0o644)
+		}
 		p.serve(tty1, "tty1", version)
 		p.pinned("tty1", version)
 		got := p.files()
-		if _, left := got["tty1.8.html"]; left || got["rustwake.6.html"] != "rustwake's" || len(got) != 2 {
-			t.Errorf("wanted the older page of tty1 gone and rustwake's left, got %v", slices.Collect(maps.Keys(got)))
+		if !maps.Equal(got, map[string]string{
+			"man/rustwake.6.html": "rustwake's", "man/" + page: string(readFile(t, filepath.Join(tty1, page))), "site/media/tty1/name.svg": "the name",
+		}) {
+			t.Errorf("wanted tty1's older page and recording gone and the rest left, got %v", slices.Collect(maps.Keys(got)))
 		}
 		want := map[string]pin{
-			"rustwake": {Version: "v0.1.0", Files: map[string]string{"rustwake.6.html": strings.Repeat("a", 64)}},
+			"rustwake": {Version: "v0.1.0", Files: map[string]string{"rustwake.6.html": a}},
 			"tty1":     {Version: version, Files: map[string]string{page: sum}},
 		}
 		if got := p.lock(); !equalPins(got, want) {
@@ -64,6 +98,13 @@ func TestThePinScript(t *testing.T) {
 		p := newPin(t, "{}\n")
 		spoil(t, filepath.Join(p.serve(tty1, "tty1", version), page))
 		p.refused("is not the one the studio signed for", "tty1", version)
+	})
+
+	t.Run("a recording other than the one signed for", func(t *testing.T) {
+		v := manifestOf(t, rustwake).Version
+		p := newPin(t, "{}\n")
+		spoil(t, filepath.Join(p.serve(rustwake, "rustwake", v), "rustwake.gif"))
+		p.refused("The rustwake.gif downloaded is not the one the studio signed for", "rustwake", v)
 	})
 
 	t.Run("a manifest with one byte changed", func(t *testing.T) {
@@ -174,14 +215,18 @@ func newPin(t *testing.T, lock string) *pinTrial {
 	return p
 }
 
-// serve puts a release's manifest, its signature and its pages where the script asks for
-// NAME's VERSION, and returns that folder.
+// serve puts a release's manifest, its signature, its pages and its recording where the script
+// asks for NAME's VERSION, and returns that folder.
 func (p *pinTrial) serve(release, name, version string) string {
 	p.t.Helper()
 	dir := filepath.Join(p.tree, name, "releases", "download", version)
-	files, err := filepath.Glob(filepath.Join(release, "*.html"))
-	if err != nil {
-		p.t.Fatal(err)
+	var files []string
+	for _, pattern := range []string{"*.html", "*.gif", "*.png"} {
+		found, err := filepath.Glob(filepath.Join(release, pattern))
+		if err != nil {
+			p.t.Fatal(err)
+		}
+		files = append(files, found...)
 	}
 	for _, f := range append(files, filepath.Join(release, "manifest.json"), filepath.Join(release, "manifest.json.sig")) {
 		write(p.t, filepath.Join(dir, filepath.Base(f)), readFile(p.t, f), 0o644)
@@ -220,7 +265,7 @@ func (p *pinTrial) pinned(name, version string) {
 	}
 }
 
-// refused holds that the run stops with what it says, and leaves the lock and man/ as they were.
+// refused holds that the run stops with what it says, and leaves the lock and every file as they were.
 func (p *pinTrial) refused(says string, args ...string) {
 	p.t.Helper()
 	lock, files := readFile(p.t, filepath.Join(p.root, "games.lock.json")), p.files()
@@ -229,22 +274,32 @@ func (p *pinTrial) refused(says string, args ...string) {
 		p.t.Errorf("wanted status 1 and to be told %q, got %d: %q %q", says, status, out, errs)
 	}
 	if string(readFile(p.t, filepath.Join(p.root, "games.lock.json"))) != string(lock) || !maps.Equal(p.files(), files) {
-		p.t.Error("wanted games.lock.json and man/ left as they were")
+		p.t.Error("wanted games.lock.json, man/ and site/media/ left as they were")
 	}
 }
 
-// files returns what man/ holds, by name.
+// files returns what the script may write, man/ and site/media/, by path from the root.
 func (p *pinTrial) files() map[string]string {
 	p.t.Helper()
 	out := map[string]string{}
-	entries, err := os.ReadDir(filepath.Join(p.root, "man"))
-	if errors.Is(err, os.ErrNotExist) {
-		return out
-	} else if err != nil {
-		p.t.Fatal(err)
-	}
-	for _, e := range entries {
-		out[e.Name()] = string(readFile(p.t, filepath.Join(p.root, "man", e.Name())))
+	for _, dir := range []string{"man", filepath.Join("site", "media")} {
+		err := filepath.WalkDir(filepath.Join(p.root, dir), func(path string, d fs.DirEntry, err error) error {
+			if errors.Is(err, fs.ErrNotExist) {
+				return nil
+			}
+			if err != nil || d.IsDir() {
+				return err
+			}
+			rel, err := filepath.Rel(p.root, path)
+			if err != nil {
+				return err
+			}
+			out[filepath.ToSlash(rel)] = string(readFile(p.t, path))
+			return nil
+		})
+		if err != nil {
+			p.t.Fatal(err)
+		}
 	}
 	return out
 }
