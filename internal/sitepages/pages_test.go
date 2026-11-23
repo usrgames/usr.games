@@ -64,12 +64,8 @@ type manual struct {
 // manuals reads games.lock.json and returns the manual page of each release it pins, A to Z. A
 // page goes on the site only as its release shipped it, and scripts/pin.sh checked that release:
 // its file in man/ has to match the lock's hash, and man/ may hold nothing the lock does not name.
-func manuals(t *testing.T, modules []string) []manual {
+func manuals(t *testing.T, pins []games.Pin) []manual {
 	t.Helper()
-	pins, err := games.LoadLock(root("games.lock.json"), modules)
-	if err != nil {
-		t.Fatal(err)
-	}
 	named := map[string]bool{}
 	var out []manual
 	for _, pin := range pins {
@@ -89,10 +85,44 @@ func manuals(t *testing.T, modules []string) []manual {
 	return out
 }
 
+// recordings returns the games with a recording on the site. A recording is served as its
+// release shipped it: each file has to match the lock's hash, and site/media may hold no
+// recording the lock does not name.
+func recordings(t *testing.T, pins []games.Pin) map[string]bool {
+	t.Helper()
+	out, named := map[string]bool{}, map[string]bool{}
+	for _, pin := range pins {
+		if !pin.Recorded() {
+			continue
+		}
+		out[pin.Name] = true
+		for _, file := range []string{pin.Name + ".gif", pin.Name + ".png"} {
+			pinned(t, pin, file)
+			named[games.Path(pin.Name, file)] = true
+		}
+	}
+	for _, pattern := range []string{"site/media/*/*.gif", "site/media/*/*.png"} {
+		found, err := filepath.Glob(root(pattern))
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, f := range found {
+			rel, err := filepath.Rel(root(""), f)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if rel = filepath.ToSlash(rel); !named[rel] {
+				t.Errorf("%s is pinned by nothing in games.lock.json: remove it, or pin it with scripts/pin.sh", rel)
+			}
+		}
+	}
+	return out
+}
+
 // pinned returns a pinned file as the site keeps it, and fails unless it matches its pin.
 func pinned(t *testing.T, pin games.Pin, file string) []byte {
 	t.Helper()
-	path := "man/" + file
+	path := games.Path(pin.Name, file)
 	raw, err := os.ReadFile(root(path))
 	if err != nil {
 		t.Fatalf("games.lock.json pins %s (scripts/pin.sh %s %s writes it): %v", path, pin.Name, pin.Version, err)
@@ -269,7 +299,12 @@ func pages(t *testing.T) map[string]string {
 	if len(list) == 1 {
 		count = "1 game."
 	}
-	mans := manuals(t, modules)
+	pins, err := games.LoadLock(root("games.lock.json"), modules)
+	if err != nil {
+		t.Fatal(err)
+	}
+	mans := manuals(t, pins)
+	recordings(t, pins)
 	man := map[string]string{}
 	for _, m := range mans {
 		man[m.Name] = m.Section

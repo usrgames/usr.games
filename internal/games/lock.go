@@ -26,7 +26,7 @@ var (
 
 // LoadLock reads the lock at path and returns its pins, A to Z. It refuses a pin of a program
 // not among modules, a version that is not vX.Y.Z, a hash that is not one, and anything but
-// one manual page.
+// one manual page and, for a game with a recording, NAME.gif and its still, NAME.png.
 func LoadLock(path string, modules []string) ([]Pin, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -47,18 +47,25 @@ func LoadLock(path string, modules []string) ([]Pin, error) {
 		if !versionText.MatchString(pin.Version) {
 			return nil, fmt.Errorf("%s: %s: wanted a version such as v0.1.0, got %q", path, name, pin.Version)
 		}
-		pages := 0
+		pages, recording := 0, 0
 		for file, sum := range pin.Files {
 			if !hashText.MatchString(sum) {
 				return nil, fmt.Errorf("%s: %s: %s: wanted a SHA-256 in hex, got %q", path, name, file, sum)
 			}
-			if _, ok := section(name, file); !ok {
+			switch _, ok := section(name, file); {
+			case ok:
+				pages++
+			case file == name+".gif" || file == name+".png":
+				recording++
+			default:
 				return nil, fmt.Errorf("%s: %s pins %s, which the site has no use for", path, name, file)
 			}
-			pages++
 		}
 		if pages != 1 {
 			return nil, fmt.Errorf("%s: %s: wanted one manual page, got %d", path, name, pages)
+		}
+		if recording == 1 {
+			return nil, fmt.Errorf("%s: %s: wanted a recording as both %s.gif and its still, %s.png, got one of them", path, name, name, name)
 		}
 		out = append(out, pin)
 	}
@@ -74,6 +81,21 @@ func (p Pin) Manual() (file, sect string) {
 		}
 	}
 	return "", ""
+}
+
+// Recorded says whether the pin holds a recording of the game: NAME.gif, and NAME.png, its still.
+func (p Pin) Recorded() bool {
+	_, ok := p.Files[p.Name+".gif"]
+	return ok
+}
+
+// Path returns where the site keeps a pinned file, from the repository's root: a manual page in
+// man/, which its page on the site is made from, and a recording where the site serves it.
+func Path(name, file string) string {
+	if strings.HasSuffix(file, ".html") {
+		return "man/" + file
+	}
+	return "site/media/" + name + "/" + file
 }
 
 // section returns the section of the manual a file is the page of, if it is the program's
