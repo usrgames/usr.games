@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="go-import" content="usr.games/rustwake git https://github.com/usrgames/rustwake">
+<meta name="go-import" content="usr.games/skyspear git https://github.com/usrgames/skyspear">
+<meta name="go-import" content="usr.games/breakshot git https://github.com/usrgames/breakshot">
+<meta name="go-import" content="usr.games/tty1 git https://github.com/usrgames/tty1">
+<meta name="go-import" content="usr.games/arcade git https://github.com/usrgames/arcade">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The manual of tty1(1): usr.games</title>
+<meta name="description" content="The manual page of tty1(1), as its release v0.1.0 ships it.">
+<link rel="preload" href="/media/fonts/VT323-Regular.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="stylesheet" href="/style.css">
+<link rel="alternate" type="application/atom+xml" title="usr.games: the plan" href="/plan.xml">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the page</a>
+<div class="tube">
+<header class="mast">
+  <a class="sign" href="/"><img src="/sign.svg" alt="usr.games, the front page" width="720" height="80"></a>
+</header>
+<main id="main" class="doc">
+  <div>
+    <h1 class="hot">tty1(1)</h1>
+    <p class="about">The manual page that comes home with <a href="/tty1">tty1</a> v0.1.0.</p>
+  </div>
+  <p><span class="dim">$</span> tty1 man tty1</p>
+  <div class="manual">
+<section class="Sh">
+<h2 class="Sh" id="NAME"><a class="permalink" href="#NAME">NAME</a></h2>
+<p class="Pp">tty1 - the usr.games launcher</p>
+</section>
+<section class="Sh">
+<h2 class="Sh" id="SYNOPSIS"><a class="permalink" href="#SYNOPSIS">SYNOPSIS</a></h2>
+<p class="Pp"><b>tty1 ls</b>
+  <br/>
+  <b>tty1 install</b> <i>name</i>
+  <br/>
+  <b>tty1 update</b> [<i>name</i>]
+  <br/>
+  <b>tty1 run</b> <i>name</i> [<i>argument</i> ...]
+  <br/>
+  <b>tty1 doctor</b>
+  <br/>
+  <b>tty1 man</b> [<i>name</i>]
+  <br/>
+  <b>tty1 help</b>
+  <br/>
+  <b>tty1 --version</b></p>
+</section>
+<section class="Sh">
+<h2 class="Sh" id="DESCRIPTION"><a class="permalink" href="#DESCRIPTION">DESCRIPTION</a></h2>
+<p class="Pp"><b>tty1</b> brings the games of usr.games home, keeps them
+    current, and starts them. It keeps what it installs in one folder of its own
+    and puts nothing on your <b>PATH</b>.</p>
+<dl class="Bl-tag">
+  <dt id="tty1"><a class="permalink" href="#tty1"><b>tty1 ls</b></a></dt>
+  <dd>Lists the games: how many play each, which are installed, and which have a
+      newer release. With no network it lists what is installed and says that it
+      could not ask.</dd>
+  <dt id="tty1~2"><a class="permalink" href="#tty1~2"><b>tty1 install
+    </b><i>name</i></a></dt>
+  <dd>Brings the newest release of a game home. The release is checked first;
+      see <b>HOW A RELEASE IS CHECKED</b>.</dd>
+  <dt id="tty1~3"><a class="permalink" href="#tty1~3"><b>tty1 update
+    </b>[<i>name</i>]</a></dt>
+  <dd>Brings an installed game up to date. With no name it does so for every
+      installed game, and then for <b>tty1</b> itself, if a release built it. A
+      <b>tty1</b> built with <b>go install</b> is updated the same way it was
+      installed, and says so.</dd>
+  <dt id="tty1~4"><a class="permalink" href="#tty1~4"><b>tty1 run
+    </b><i>name</i><b> [<i>argument</i> ...]</b></a></dt>
+  <dd>Starts an installed game and hands it the rest of the line. The game takes
+      the place of <b>tty1</b>, so it has the terminal to itself. This needs no
+      network.</dd>
+  <dt id="tty1~5"><a class="permalink" href="#tty1~5"><b>tty1
+    doctor</b></a></dt>
+  <dd>Looks at the terminal it is running in and says what it found: whether the
+      terminal tells a game when a key is let go, whether it shows 24-bit
+      colour, and how big it is, with what to change where something can be. A
+      key pressed while it asks, a quarter second at most, is lost.</dd>
+  <dt id="tty1~6"><a class="permalink" href="#tty1~6"><b>tty1 man
+    </b>[<i>name</i>]</a></dt>
+  <dd>Shows the manual page of an installed game, with the <b>man</b>(1) of this
+      machine. With no name, or the name <b>tty1</b>, it shows this page.</dd>
+  <dt id="tty1~7"><a class="permalink" href="#tty1~7"><b>tty1 help</b></a></dt>
+  <dd>Shows the commands.</dd>
+  <dt id="tty1~8"><a class="permalink" href="#tty1~8"><b>tty1
+    --version</b></a></dt>
+  <dd>Says which <b>tty1</b> this is.</dd>
+</dl>
+</section>
+<section class="Sh">
+<h2 class="Sh" id="HOW_A_RELEASE_IS_CHECKED"><a class="permalink" href="#HOW_A_RELEASE_IS_CHECKED">HOW
+  A RELEASE IS CHECKED</a></h2>
+<p class="Pp">A release carries a manifest, which names every file with its size
+    and SHA-256, and a signature of the manifest. <b>tty1</b> takes the steps
+    below in this order, and stops at the first that fails. Nothing is unpacked
+    before every check has passed, and a game that was installed before stays as
+    it was.</p>
+<dl class="Bl-tag">
+  <dt>1.</dt>
+  <dd>The signature has to be the studio's, made for this program. The one key
+      <b>tty1</b> trusts is built into it.</dd>
+  <dt>2.</dt>
+  <dd>The release must not be older than the one installed.</dd>
+  <dt>3.</dt>
+  <dd>The archive for this machine is downloaded to its end and has to have the
+      size and the SHA-256 the manifest gives.</dd>
+  <dt>4.</dt>
+  <dd>The archive is unpacked strictly: plain files with plain names, and
+      nothing else.</dd>
+  <dt>5.</dt>
+  <dd>The game is unpacked beside where it will live and moved into place
+    whole.</dd>
+</dl>
+<p class="Pp">The list of games is not trusted. It says what to offer. Whatever
+    name it is given, <b>tty1</b> installs only what the studio signed under
+    that exact name.</p>
+</section>
+<section class="Sh">
+<h2 class="Sh" id="FILES"><a class="permalink" href="#FILES">FILES</a></h2>
+<dl class="Bl-tag">
+  <dt><i>~/.local/share/tty1/</i></dt>
+  <dd>Everything <b>tty1</b> writes is in this folder, or in the folder
+      <i>tty1</i> under <b>XDG_DATA_HOME</b> where that is set. Removing it
+      removes every game <b>tty1</b> installed.</dd>
+  <dt><i>~/.local/share/tty1/games/name/</i></dt>
+  <dd>An installed game: what its archive held, and the manifest that vouched
+      for it.</dd>
+  <dt><i>~/.local/share/tty1/staging/</i></dt>
+  <dd>A release while it is downloaded and checked. It is empty when <b>tty1</b>
+      is not at work.</dd>
+  <dt><i>~/.local/share/tty1/man/tty1.1</i></dt>
+  <dd>This page, written here when <b>tty1 man</b> is asked for it.</dd>
+</dl>
+<p class="Pp">When <b>tty1 update</b> replaces <b>tty1</b> itself, it writes the
+    new program beside the old one and moves it over in one step.</p>
+</section>
+<section class="Sh">
+<h2 class="Sh" id="ENVIRONMENT"><a class="permalink" href="#ENVIRONMENT">ENVIRONMENT</a></h2>
+<dl class="Bl-tag">
+  <dt id="TTY1_HOME"><a class="permalink" href="#TTY1_HOME"><b>TTY1_HOME</b></a></dt>
+  <dd>The folder to keep everything in, instead of the one above.</dd>
+  <dt id="TTY1_SITE"><a class="permalink" href="#TTY1_SITE"><b>TTY1_SITE</b></a></dt>
+  <dd>Where the list of games is asked for, instead of https://usr.games.</dd>
+  <dt id="TTY1_RELEASES"><a class="permalink" href="#TTY1_RELEASES"><b>TTY1_RELEASES</b></a></dt>
+  <dd>Where releases are asked for, instead of https://github.com/usrgames.</dd>
+  <dt id="XDG_DATA_HOME"><a class="permalink" href="#XDG_DATA_HOME"><b>XDG_DATA_HOME</b></a></dt>
+  <dd>Where programs keep their data, if not in <i>~/.local/share</i>.</dd>
+  <dt id="COLORTERM"><a class="permalink" href="#COLORTERM"><b>COLORTERM</b>,
+    <b>TERM</b></a></dt>
+  <dd>What <b>tty1 doctor</b> goes by for colour, as the games do.</dd>
+</dl>
+<p class="Pp">The first three are for trying <b>tty1</b> out. None of them
+    changes whose signature it accepts.</p>
+</section>
+<section class="Sh">
+<h2 class="Sh" id="EXIT_STATUS"><a class="permalink" href="#EXIT_STATUS">EXIT
+  STATUS</a></h2>
+<dl class="Bl-tag">
+  <dt><b>0</b></dt>
+  <dd>What was asked was done.</dd>
+  <dt><b>1</b></dt>
+  <dd>It could not be done. The reason is on the standard error.</dd>
+  <dt><b>2</b></dt>
+  <dd>The command line was not understood.</dd>
+</dl>
+<p class="Pp"><b>tty1 run</b> ends with the status of the game it started.
+    <b>tty1 doctor</b> fails only where a game could not run at all: where its
+    input or its output is not a terminal.</p>
+</section>
+<section class="Sh">
+<h2 class="Sh" id="SEE_ALSO"><a class="permalink" href="#SEE_ALSO">SEE
+  ALSO</a></h2>
+<p class="Pp"><b>man</b>(1), <b>ssh-keygen</b>(1)</p>
+<p class="Pp">The page <i>/terminals</i> of usr.games says which terminals play
+    the games best.</p>
+</section>
+</div>
+</main>
+<footer class="foot">
+  <p class="dim">$ ls /usr/share/games</p>
+  <p class="ls"><a href="/tty1">tty1</a><a href="/arcade">arcade</a><a href="/man">man</a><a href="/terminals">terminals</a><a href="/plan">plan</a><a href="/privacy">privacy</a><a href="/terms">terms</a></p>
+  <p class="dim">Built on <a href="https://glonk.dev">glonk</a>. A directory since 1971. A studio since 2026. Operated by KOHANTIC LLC.</p>
+</footer>
+</div>
+</body>
+</html>

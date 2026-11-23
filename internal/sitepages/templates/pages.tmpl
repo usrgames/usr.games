@@ -45,12 +45,13 @@
     <section>
       <h2>Keys</h2>
       <dl class="keys">{{range .Game.Keys}}<dt>{{index . 0}}</dt><dd class="dim">{{index . 1}}</dd>{{end}}</dl>
-    </section>
+{{if index .Man .Game.Name}}      <p class="dim note">Every key and option is in <a href="/man/{{.Game.Name}}">its manual page</a>.</p>
+{{end}}    </section>
     <section>
       <h2>Take it home</h2>
       <p><span class="dim">$</span> tty1 install {{.Game.Name}}</p>
       <p><span class="dim">$</span> go install usr.games/{{.Game.Name}}@latest</p>
-      <p><span class="dim">$</span> man {{.Game.Name}}</p>
+      <p><span class="dim">$</span> tty1 man {{.Game.Name}}</p>
     </section>
 {{if .Others}}    <section>
       <h2>See also</h2>
@@ -73,7 +74,30 @@
   <section>
     <h2>Use it</h2>
     <dl class="keys wide"><dt>tty1 ls</dt><dd class="dim">list the games</dd><dt>tty1 install {{.Example}}</dt><dd class="dim">bring a game home</dd><dt>tty1 update</dt><dd class="dim">bring everything up to date</dd><dt>tty1 run {{.Example}}</dt><dd class="dim">start a game</dd><dt>tty1 man {{.Example}}</dt><dd class="dim">read a game's manual page</dd><dt>tty1 doctor</dt><dd class="dim">check your terminal, and say what a better one would give you</dd></dl>
-  </section>
+{{if index .Man "tty1"}}    <p class="dim note">Every command, and how a release is checked, is in <a href="/man/tty1">its manual page</a>.</p>
+{{end}}  </section>
+</main>
+{{template "foot" .}}{{end}}
+
+{{define "manindex"}}{{template "head" .}}<main id="main" class="doc">
+  <div>
+    <h1 class="hot">The manual.</h1>
+    <p class="about">Every page that comes home with a game, and tty1's own.</p>
+  </div>
+  <div>
+    <p><span class="dim">$</span> ls /usr/share/man</p>
+    <p class="cols">{{range .Manuals}}<a href="/man/{{.Name}}">{{.Name}}({{.Section}})</a>{{end}}</p>
+  </div>
+</main>
+{{template "foot" .}}{{end}}
+
+{{define "man"}}{{template "head" .}}<main id="main" class="doc">
+  <div>
+    <h1 class="hot">{{.Manual.Name}}({{.Manual.Section}})</h1>
+    <p class="about">The manual page that comes home with <a href="/{{.Manual.Name}}">{{.Manual.Name}}</a> {{.Manual.Version}}.</p>
+  </div>
+  <p><span class="dim">$</span> tty1 man {{.Manual.Name}}</p>
+  <div class="manual">{{.Manual.Body}}</div>
 </main>
 {{template "foot" .}}{{end}}
 
