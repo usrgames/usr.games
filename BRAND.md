@@ -30,7 +30,7 @@ One colour, and the four voices a terminal gives it.
 | Dim | `#2fd16a` | What can be read second: prompts, notes, captions. |
 | Reversed | glass on plain | What is yours, and what you can press. |
 
-A blink asks for a key: four blinks, then it holds still. Nothing else moves by itself.
+A blink asks for a key: four blinks, then it holds still. A game's recording plays on its screen, over and over, and holds still for anyone who asks for less motion or ticks pause under it. Nothing else moves by itself.
 
 Every voice is readable on the glass at 4.5 to 1 or better; a test holds that.
 
@@ -51,7 +51,7 @@ Lines in use:
 ## How a game is shown
 
 - **A row of the listing.** The front page is `ls -l /usr/games`. Each game is a row; the row you are on is reversed. A column says how many can play: `1p`, `2p`, `2p net`.
-- **An attract screen.** Beside the listing, one screen shows the game you are on: its picture, its name, what it is, and an invitation to play.
+- **An attract screen.** Beside the listing, one screen shows the game you are on: its recording, its name, what it is, and an invitation to play.
 
 The listing grows downward and nothing is redesigned. The line under it counts the games. From eight games up it is meant to gain three controls that rewrite the command (A to Z, newest first, only games against someone); those are not built yet.
 
@@ -67,4 +67,8 @@ The listing grows downward and nothing is redesigned. The line under it counts t
 
 Draw them again with `make site`.
 
-**The sketches are placeholders.** A game's screen is meant to show a recording of the game itself. Until each game's release brings one, a small sketch in cells keeps the screen from being empty.
+| Pinned file | What |
+|---|---|
+| `site/media/<game>/<game>.gif`, `.png` | A game's recording and its still, from its release: the game playing itself, in its own colours, 1320 by 672, under 3,000,000 bytes, looping. `scripts/pin.sh` brings them. |
+
+**The sketches are placeholders.** A game's screen shows a recording of the game itself. Until a game's release brings one and it is pinned, a small sketch in cells keeps its screen from being empty; the sketch goes when the recording comes.

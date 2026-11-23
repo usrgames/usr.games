@@ -49,6 +49,7 @@ type page struct {
 	Example  string            // a game to name in the launcher's examples
 	Notes    []plan.Note       // the devlog, newest first
 	Contact  template.HTML     // where the notices say to write
+	Rec      map[string]bool   // the games whose screens show their recording
 	Man      map[string]string // the section of each program with a manual page on the site
 	Manuals  []manual          // every manual page, A to Z
 	Manual   *manual           // on a manual's own page, that manual
@@ -284,6 +285,14 @@ func pages(t *testing.T) map[string]string {
 	tmpl, err := template.New("").Funcs(template.FuncMap{
 		// The width a drawn name is given in a page: ten units a cell, six cells a letter.
 		"namew": func(name string, more int) int { return (len(name) + more) * 60 },
+		// What the screen template is given: a game, or a pointer to one, and whether its
+		// recording is pinned.
+		"screen": func(g any, rec bool) any {
+			return struct {
+				Game any
+				Rec  bool
+			}{g, rec}
+		},
 	}).ParseGlob(filepath.Join("templates", "*.tmpl"))
 	if err != nil {
 		t.Fatal(err)
@@ -303,14 +312,18 @@ func pages(t *testing.T) map[string]string {
 	if err != nil {
 		t.Fatal(err)
 	}
-	mans := manuals(t, pins)
-	recordings(t, pins)
+	mans, rec := manuals(t, pins), recordings(t, pins)
+	for _, g := range list {
+		if rec[g.Name] && g.Recording == "" {
+			t.Fatalf("games.json: %s: its recording is pinned, so it needs a recording: what the recording shows, for anyone who cannot see it", g.Name)
+		}
+	}
 	man := map[string]string{}
 	for _, m := range mans {
 		man[m.Name] = m.Section
 	}
 	base := func(title, text, source string) page {
-		return page{Title: title, GoTags: goTags(modules, source), Describe: describe(title, text, false), Games: sorted, Count: count, Example: list[0].Name, Man: man}
+		return page{Title: title, GoTags: goTags(modules, source), Describe: describe(title, text, false), Games: sorted, Count: count, Example: list[0].Name, Rec: rec, Man: man}
 	}
 
 	out := map[string]string{}

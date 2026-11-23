@@ -10,6 +10,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/xml"
+	"errors"
 	"flag"
 	"image"
 	"image/png"
@@ -44,8 +45,24 @@ type drawn struct {
 	ico  []int
 }
 
+// recorded returns the games whose recording games.lock.json pins: their screens show it, so
+// they need no sketch.
+func recorded(t *testing.T) map[string]bool {
+	t.Helper()
+	pins, err := games.LoadLock(root("games.lock.json"), games.Modules(list(t)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	out := map[string]bool{}
+	for _, p := range pins {
+		out[p.Name] = p.Recorded()
+	}
+	return out
+}
+
 func files(t *testing.T) []drawn {
 	t.Helper()
+	rec := recorded(t)
 	out := []drawn{
 		{path: "site/sign.svg", text: Sign()},
 		{path: "site/favicon.svg", text: Mark()},
@@ -55,13 +72,15 @@ func files(t *testing.T) []drawn {
 		{path: "site/card.png", pic: Card()},
 	}
 	for _, g := range list(t) {
+		out = append(out, drawn{path: "site/media/" + g.Name + "/name.svg", text: Name(g.Name + "(6)")})
+		if rec[g.Name] {
+			continue
+		}
 		sketch, ok := Sketch(g.Name)
 		if !ok {
 			t.Fatalf("wanted a sketch of %s until its recording arrives; add one to sketch.go", g.Name)
 		}
-		out = append(out,
-			drawn{path: "site/media/" + g.Name + "/name.svg", text: Name(g.Name + "(6)")},
-			drawn{path: "site/media/" + g.Name + "/sketch.svg", text: sketch})
+		out = append(out, drawn{path: "site/media/" + g.Name + "/sketch.svg", text: sketch})
 	}
 	for _, tool := range games.Tools {
 		out = append(out, drawn{path: "site/media/" + tool + "/name.svg", text: Name(tool)})
@@ -162,6 +181,19 @@ func TestTheFilesAreWhatTheSourceDraws(t *testing.T) {
 			}
 		case string(got) != f.text:
 			t.Errorf("%s is not what the source draws (run with -update to draw it again)", f.path)
+		}
+	}
+	// A sketch stands in for a game's recording, and goes once the recording is pinned.
+	for name, rec := range recorded(t) {
+		stale := "site/media/" + name + "/sketch.svg"
+		switch _, err := os.Stat(root(stale)); {
+		case !rec || errors.Is(err, os.ErrNotExist):
+		case *update:
+			if err := os.Remove(root(stale)); err != nil {
+				t.Fatal(err)
+			}
+		default:
+			t.Errorf("%s stands in for a recording that is pinned now (run with -update to remove it)", stale)
 		}
 	}
 }

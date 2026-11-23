@@ -7,12 +7,14 @@
 {{end}}    <p class="hint dim">{{.Count}} Up and down to choose, return to play.<span class="cursor blink"></span></p>
   </div>
   <div class="preview">
-{{range $i, $g := .Games}}    <div class="att"{{if $i}} hidden{{end}}>
-      <img class="pic" src="/media/{{$g.Name}}/sketch.svg" alt="{{$g.Picture}}" width="660" height="340">
+{{if .Rec}}    <input type="checkbox" id="hold" class="hold">
+{{end}}{{range $i, $g := .Games}}    <div class="att"{{if $i}} hidden{{end}}>
+      {{template "screen" (screen $g (index $.Rec $g.Name))}}
       <img class="name" src="/media/{{$g.Name}}/name.svg" alt="{{$g.Name}}(6)" width="{{namew $g.Name 3}}" height="80">
       <p class="dim">{{$g.Blurb}}</p>
       <p><a class="rev" href="/{{$g.Name}}">&nbsp;Play&nbsp;</a> <span class="blink">or press return</span></p>
     </div>
+{{end}}{{if .Rec}}    <label for="hold" class="hold">pause</label>
 {{end}}  </div>
   <div class="homecol">
     <section>
@@ -35,7 +37,7 @@
   {{template "games" .}}
 </nav>
 <main id="main" class="page">
-  <div class="att"><img class="pic" src="/media/{{.Game.Name}}/sketch.svg" alt="{{.Game.Picture}}" width="660" height="340"></div>
+  <div class="att">{{if index .Rec .Game.Name}}<input type="checkbox" id="hold" class="hold">{{end}}{{template "screen" (screen .Game (index .Rec .Game.Name))}}{{if index .Rec .Game.Name}}<label for="hold" class="hold">pause</label>{{end}}</div>
   <div class="side">
     <div>
       <h1 class="title"><img src="/media/{{.Game.Name}}/name.svg" alt="{{.Game.Name}}(6)" width="{{namew .Game.Name 3}}" height="80"></h1>
