@@ -1,1 +1,20 @@
-{}
+{
+  "rustwake": {
+    "files": {
+      "rustwake.6.html": "28a4631b7253b04f475eb20bdc297add2ddaa522c46acc6373898effbe5590c1"
+    },
+    "version": "v0.1.0"
+  },
+  "skyspear": {
+    "files": {
+      "skyspear.6.html": "f9a01119571cdd3dbc7ed06ee0794271ad635cbb11506370ec316b13ce96c74f"
+    },
+    "version": "v1.0.0"
+  },
+  "tty1": {
+    "files": {
+      "tty1.1.html": "0f0db45c034d329270994d1980c0b65a27fbc280eed402af96980b12f9d8acb6"
+    },
+    "version": "v0.1.0"
+  }
+}
