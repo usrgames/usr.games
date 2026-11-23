@@ -3,13 +3,17 @@
     "files": {
       "rustwake.6.html": "28a4631b7253b04f475eb20bdc297add2ddaa522c46acc6373898effbe5590c1",
       "rustwake.gif": "cf07dd0822ed1e5960eb38f9ac0d233c6f7b5bc0f37085c4e6cc2971b6c8324f",
-      "rustwake.png": "4f334f4f3c82f669295635a39be5daa1845955dd29e4c77eab3f3b431ddf38ee"
+      "rustwake.png": "4f334f4f3c82f669295635a39be5daa1845955dd29e4c77eab3f3b431ddf38ee",
+      "rustwake.wasm.gz": "29e7be2c7e1150876020510072202ae20431f28b6653a0eb72871bf02a064210",
+      "wasm_exec.js": "0c949f4996f9a89698e4b5c586de32249c3b69b7baadb64d220073cc04acba14"
     },
     "version": "v0.1.0"
   },
   "skyspear": {
     "files": {
-      "skyspear.6.html": "f9a01119571cdd3dbc7ed06ee0794271ad635cbb11506370ec316b13ce96c74f"
+      "skyspear.6.html": "f9a01119571cdd3dbc7ed06ee0794271ad635cbb11506370ec316b13ce96c74f",
+      "skyspear.wasm.gz": "1c3d04d3ee998a705b0833d741ad10f07c0497ae237067e5edd69102ac6aae00",
+      "wasm_exec.js": "0c949f4996f9a89698e4b5c586de32249c3b69b7baadb64d220073cc04acba14"
     },
     "version": "v1.0.0"
   },
