@@ -1,7 +1,9 @@
 {
   "rustwake": {
     "files": {
-      "rustwake.6.html": "28a4631b7253b04f475eb20bdc297add2ddaa522c46acc6373898effbe5590c1"
+      "rustwake.6.html": "28a4631b7253b04f475eb20bdc297add2ddaa522c46acc6373898effbe5590c1",
+      "rustwake.gif": "cf07dd0822ed1e5960eb38f9ac0d233c6f7b5bc0f37085c4e6cc2971b6c8324f",
+      "rustwake.png": "4f334f4f3c82f669295635a39be5daa1845955dd29e4c77eab3f3b431ddf38ee"
     },
     "version": "v0.1.0"
   },
