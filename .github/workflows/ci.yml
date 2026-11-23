@@ -31,3 +31,54 @@ jobs:
         with:
           go-version: "1.27"
       - run: make check
+      # make check skips shellcheck where there is none. Here it has to have run.
+      - name: the installer is clean by shellcheck
+        run: |
+          command -v shellcheck > /dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends shellcheck; }
+          shellcheck --version
+          shellcheck -s sh site/install.sh
+
+  # The installer as a player runs it, on each kind of machine there is a runner for: from
+  # GitHub, and then against copies of the latest releases spoiled in each way it must refuse.
+  # The test of that skips itself without the copies, so it is run here by name.
+  installer:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.27"
+      - name: the installer, from GitHub, into a new home
+        run: |
+          home="$RUNNER_TEMP/home"
+          mkdir "$home"
+          HOME="$home" sh < site/install.sh
+          "$home/.local/bin/tty1" --version
+      - name: the latest releases of tty1 and the relay
+        run: |
+          latest() { # repository, folder
+            mkdir -p "$2"
+            for f in manifest.json manifest.json.sig; do
+              curl -fsSL -o "$2/$f" "https://github.com/usrgames/$1/releases/latest/download/$f"
+            done
+          }
+          latest tty1 "$RUNNER_TEMP/tty1"
+          latest arcade "$RUNNER_TEMP/relay"
+          v=$(jq -r .version "$RUNNER_TEMP/tty1/manifest.json")
+          for f in $(jq -r '.files[].name' "$RUNNER_TEMP/tty1/manifest.json"); do
+            curl -fsSL -o "$RUNNER_TEMP/tty1/$f" "https://github.com/usrgames/tty1/releases/download/$v/$f"
+          done
+      - name: the installer refuses what it must
+        env:
+          TTY1_RELEASE: ${{ runner.temp }}/tty1
+          RELAY_RELEASE: ${{ runner.temp }}/relay
+        run: |
+          go test ./internal/sitecheck -run '^TestTheInstaller$' -count=1 -v | tee installer.txt
+          grep -- '--- PASS: TestTheInstaller ' installer.txt
