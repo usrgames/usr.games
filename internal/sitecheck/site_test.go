@@ -122,6 +122,20 @@ func TestEveryPageCarriesTheTagsTheGoCommandReads(t *testing.T) {
 	}
 }
 
+// A page offers `go install` only of a module the site answers the go command for. For a game
+// or the arcade the command would fail, since their source is private (#33).
+func TestAPageOffersGoInstallOnlyOfWhatTheSiteAnswersFor(t *testing.T) {
+	install := regexp.MustCompile(`go install (\S+?)(@|<|\s)`)
+	for _, name := range pages {
+		for _, m := range install.FindAllStringSubmatch(read(t, "site", name), -1) {
+			module, ok := strings.CutPrefix(m[1], "usr.games/")
+			if !ok || !slices.Contains(games.GoModules, module) {
+				t.Errorf("%s: offers go install %s, which the site does not answer the go command for", name, m[1])
+			}
+		}
+	}
+}
+
 // The go command reads the head with a restricted parser and the reference asks for the tags
 // early, before any CSS or script.
 func TestTheTagsComeBeforeAnythingTheParserMightStopAt(t *testing.T) {
