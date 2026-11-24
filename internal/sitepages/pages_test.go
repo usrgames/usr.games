@@ -412,7 +412,7 @@ func pages(t *testing.T) map[string]string {
 	privacy := base("Privacy: usr.games", "What usr.games keeps about its visitors and players: almost nothing.", "")
 	privacy.Contact = contact
 	render("privacy.html", "privacy", privacy)
-	terms := base("Terms: usr.games", "The house rules of usr.games: free games, open code, and a relay for playing matches.", "")
+	terms := base("Terms: usr.games", "The house rules of usr.games: free games, what you may do with them, and a relay for playing matches.", "")
 	terms.Contact = contact
 	render("terms.html", "terms", terms)
 	missing := base("No such file or directory: usr.games", "Nothing lives at this address.", "")
