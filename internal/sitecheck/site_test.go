@@ -222,28 +222,77 @@ func TestPagesAreSelfContainedAndPlain(t *testing.T) {
 	}
 }
 
-// The site has one script, on the front page, and nothing is written inside a page, so that
-// what runs is one file anyone can read. It asks no one for anything.
-func TestTheOneScriptIsTheListing(t *testing.T) {
-	const tag = `<script src="/floor.js" defer></script>`
+// A page runs at most one script of the site's, and nothing is written inside a page, so that
+// what runs is a file anyone can read: floor.js on the front page, which asks no one for
+// anything, and play.js on a page that plays its game, which loads the game and glonk's player
+// from this site alone, when asked.
+func TestTheScriptsAreTheListingAndPlay(t *testing.T) {
 	for _, name := range pages {
 		page := read(t, "site", name)
-		want := map[bool]int{true: 1, false: 0}[name == "index.html"]
-		if got := strings.Count(strings.ToLower(page), "<script"); got != want {
-			t.Errorf("%s: wanted %d script, found %d", name, want, got)
+		var tag string
+		switch {
+		case name == "index.html":
+			tag = `<script src="/floor.js" defer></script>`
+		case plays(page):
+			tag = `<script src="/play.js" defer></script>`
 		}
-		if name == "index.html" && strings.Count(page, tag) != 1 {
-			t.Errorf("index.html: wanted its one script to be %s", tag)
+		want := map[bool]int{true: 1, false: 0}[tag != ""]
+		if got := strings.Count(strings.ToLower(page), "<script"); got != want || (tag != "" && strings.Count(page, tag) != 1) {
+			t.Errorf("%s: wanted %d script, %s, found %d", name, want, tag, got)
 		}
 		if regexp.MustCompile(`(?i)\son[a-z]+="`).MatchString(page) {
 			t.Errorf("%s: wanted no script written into a tag", name)
 		}
 	}
-	script := read(t, "site", "floor.js")
-	for _, asks := range []string{"fetch(", "XMLHttpRequest", "import(", "://", "sendBeacon", "WebSocket"} {
-		if strings.Contains(script, asks) {
-			t.Errorf("floor.js: wanted it to ask no one for anything, found %q", asks)
+	_, version := player(t)
+	for _, file := range []string{"floor.js", "play.js", filepath.Join("play", "glonk", version, "glonk.js")} {
+		script := read(t, "site", file)
+		asks := []string{"XMLHttpRequest", "import(", "://", "sendBeacon", "WebSocket", "eval(", "Function("}
+		if file == "floor.js" || file == "play.js" {
+			asks = append(asks, "fetch(") // glonk.js fetches the game it is given, from this site
 		}
+		for _, a := range asks {
+			if strings.Contains(script, a) {
+				t.Errorf("%s: wanted it to ask no other site for anything, found %q", file, a)
+			}
+		}
+	}
+}
+
+// A page that plays its game names the game's build, its wasm_exec.js and glonk's player, and
+// each has to be a file of the site, at the address that carries its version.
+func TestAPageThatPlaysNamesFilesOfTheSite(t *testing.T) {
+	found := 0
+	data := regexp.MustCompile(` data-(game|exec|player)="([^"]*)"`)
+	for _, name := range pages {
+		page := read(t, "site", name)
+		if !plays(page) {
+			continue
+		}
+		found++
+		got := map[string]string{}
+		for _, m := range data.FindAllStringSubmatch(page, -1) {
+			got[m[1]] = m[2]
+		}
+		if !regexp.MustCompile(` data-cols="[0-9]+" data-rows="[0-9]+"`).MatchString(page) {
+			t.Errorf("%s: wanted the size the game plays at, data-cols and data-rows", name)
+		}
+		_, version := player(t)
+		if got["player"] != "/play/glonk/"+version+"/" {
+			t.Errorf("%s: wanted the player /play/glonk/%s/, got %q", name, version, got["player"])
+		}
+		for _, path := range []string{got["game"], got["exec"], got["player"] + "glonk.js"} {
+			if !strings.HasPrefix(path, "/play/") {
+				t.Errorf("%s: wanted %q under /play/", name, path)
+				continue
+			}
+			if _, err := os.Stat(filepath.Join(site, filepath.FromSlash(path))); err != nil {
+				t.Errorf("%s: wanted %q to be a file of the site, got %v", name, path, err)
+			}
+		}
+	}
+	if found == 0 {
+		t.Error("wanted at least one page that plays its game")
 	}
 }
 
@@ -287,12 +336,25 @@ func TestTheLinkPreviewNamesAFileOfTheSite(t *testing.T) {
 // opens the block.
 func headers(t *testing.T, pattern string) map[string]string {
 	t.Helper()
+	out := rule(t, pattern)
+	if len(out) == 0 {
+		t.Fatalf("_headers: wanted headers for %s", pattern)
+	}
+	return out
+}
+
+// rule returns the headers _headers gives a pattern, none if it has no rule for it. A header the
+// rule takes off, written "! Name", is the key "! Name".
+func rule(t *testing.T, pattern string) map[string]string {
+	t.Helper()
 	out, in := map[string]string{}, false
 	for _, line := range strings.Split(read(t, "site", "_headers"), "\n") {
 		switch {
 		case line == "" || strings.HasPrefix(line, "#"):
 		case !strings.HasPrefix(line, " "):
 			in = line == pattern
+		case in && strings.HasPrefix(strings.TrimSpace(line), "! "):
+			out[strings.TrimSpace(line)] = ""
 		case in:
 			name, value, ok := strings.Cut(strings.TrimSpace(line), ": ")
 			if !ok {
@@ -301,11 +363,11 @@ func headers(t *testing.T, pattern string) map[string]string {
 			out[name] = value
 		}
 	}
-	if len(out) == 0 {
-		t.Fatalf("_headers: wanted headers for %s", pattern)
-	}
 	return out
 }
+
+// plays says whether a page plays its game: play.js starts it from the screen's data.
+func plays(page string) bool { return strings.Contains(page, ` data-game="`) }
 
 // The browser is told what a page may load, and refuses the rest. So the policy has to allow
 // every kind of thing the pages do load, the pages may hold nothing a policy without
@@ -338,6 +400,25 @@ func TestThePolicyAllowsWhatThePagesLoad(t *testing.T) {
 	// Only a preview is kept out of search engines; a rule for every address would hide the site.
 	if _, hidden := all["X-Robots-Tag"]; hidden || headers(t, "https://:preview.:account.workers.dev/*")["X-Robots-Tag"] != "noindex" {
 		t.Errorf("_headers: wanted X-Robots-Tag: noindex on workers.dev addresses and on no other")
+	}
+
+	// A page that plays takes the policy off and sets it again with one word more, so that the
+	// browser compiles the game's WebAssembly. No other page has a rule of its own.
+	game := strings.Replace(all["Content-Security-Policy"], "script-src 'self' ", "script-src 'self' 'wasm-unsafe-eval' ", 1)
+	for _, name := range pages {
+		path := "/" + strings.TrimSuffix(name, ".html")
+		got := rule(t, path)
+		switch {
+		case plays(read(t, "site", name)):
+			if _, off := got["! Content-Security-Policy"]; !off || got["Content-Security-Policy"] != game || len(got) != 2 {
+				t.Errorf("_headers: %s plays its game, so wanted it to take the policy off and set it again with 'wasm-unsafe-eval' and nothing else, got %v", path, got)
+			}
+		case len(got) != 0 && path != "/install.sh":
+			t.Errorf("_headers: %s does not play a game, so wanted no rule of its own, got %v", path, got)
+		}
+	}
+	if got := headers(t, "/play/*")["Cache-Control"]; got != "public, max-age=31536000, immutable" {
+		t.Errorf("_headers: wanted /play/*, whose addresses carry a version, kept for good, got %q", got)
 	}
 
 	loads := map[string]*regexp.Regexp{
@@ -605,7 +686,7 @@ func TestTheListingHoldsEveryGameAndCountsThem(t *testing.T) {
 	}
 	last := -1
 	for _, g := range games.ByName(gs) {
-		i := strings.Index(index, `<a class="row" href="/`+g.Name+`">`)
+		i := strings.Index(index, `<a class="row" href="/`+g.Name)
 		if i < 0 {
 			t.Errorf("wanted a row for %s", g.Name)
 		}
