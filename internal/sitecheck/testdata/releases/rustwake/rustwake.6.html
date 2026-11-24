@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <style>
+    table.head, table.foot { width: 100%; }
+    td.head-rtitle, td.foot-os { text-align: right; }
+    td.head-vol { text-align: center; }
+    .Nd, .Bf, .Op { display: inline; }
+    .Pa, .Ad { font-style: italic; }
+    .Ms { font-weight: bold; }
+    .Bl-diag > dt { font-weight: bold; }
+    code.Nm, .Fl, .Cm, .Ic, code.In, .Fd, .Fn, .Cd { font-weight: bold;
+      font-family: inherit; }
+  </style>
+  <title>RUSTWAKE(6)</title>
+</head>
+<body>
+<table class="head">
+  <tr>
+    <td class="head-ltitle">RUSTWAKE(6)</td>
+    <td class="head-vol">Games Manual</td>
+    <td class="head-rtitle">RUSTWAKE(6)</td>
+  </tr>
+</table>
+<div class="manual-text">
+<section class="Sh">
+<h1 class="Sh" id="NAME"><a class="permalink" href="#NAME">NAME</a></h1>
+<p class="Pp"><code class="Nm">rustwake</code> &#x2014; <span class="Nd">a
+    first-person shooter in the terminal</span></p>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="SYNOPSIS"><a class="permalink" href="#SYNOPSIS">SYNOPSIS</a></h1>
+<table class="Nm">
+  <tr>
+    <td><code class="Nm">rustwake</code></td>
+    <td>[<code class="Fl">-level</code> <var class="Ar">n</var>]
+      [<code class="Fl">-version</code>]</td>
+  </tr>
+</table>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="DESCRIPTION"><a class="permalink" href="#DESCRIPTION">DESCRIPTION</a></h1>
+<p class="Pp"><code class="Nm">rustwake</code> is a first-person shooter, drawn
+    in the terminal. Clear the rogue machines out of a dark plant, one map at a
+    time. Every picture in it is drawn by code.</p>
+<p class="Pp">Find the exit on each map: a green lamp on a steel post. Health
+    packs and ammo lie about. You start with 100 health and 20 rounds, and keep
+    what you have from one map to the next. A health pack gives back 25, and is
+    left where it lies while your health is full; ammo gives 10 rounds. A shot
+    does one point of damage and spends one round, so aim.</p>
+<p class="Pp">The machines are these:</p>
+<dl class="Bl-tag">
+  <dt>Crawler</dt>
+  <dd>Walks at you and bites.</dd>
+  <dt>Sentry</dt>
+  <dd>Stands back and fires bolts.</dd>
+  <dt>Drone</dt>
+  <dd>Fast, floats, and falls to one hit.</dd>
+  <dt>Hauler</dt>
+  <dd>Slow, takes eight hits, and hits hard.</dd>
+  <dt>Overseer</dt>
+  <dd>The boss of the last map. It takes forty hits, and fires three bolts at
+      once.</dd>
+</dl>
+<p class="Pp">The 12 maps come in three zones of four, each with its own walls,
+    floors and ceilings:</p>
+<ol class="Bl-enum">
+  <li>Pump Hall, Filter Beds, Pipe Gallery, Sluice Gate.</li>
+  <li>Slag Run, Casting Floor, Ore Lift, Furnace Row.</li>
+  <li>Cable Trench, Relay Hall, Cold Core, Control.</li>
+</ol>
+<p class="Pp">If your health runs out, the screen cracks and runs red. After a
+    moment, <code class="Ic">Enter</code> or <code class="Ic">Space</code> cuts
+    the scene short. Then choose Retry, to play the map again with 100 health
+    and 20 rounds, or Quit. Clear the last map and the plant is cleared: Play
+    again starts on the first map.</p>
+<p class="Pp">The menus are worked with <code class="Ic">Up</code>,
+    <code class="Ic">Down</code> and <code class="Ic">Enter</code>, which
+    chooses on a new press only. Nothing is saved: each run starts on the first
+    map, or on the one <code class="Fl">-level</code> names.</p>
+<p class="Pp">The game needs a terminal that shows true color. 80 columns by 24
+    rows works, and 160 columns or more shows the large title. To walk and turn
+    at the same time, use a terminal that reports key releases, such as Ghostty,
+    kitty or WezTerm. In others only one key is held at a time.</p>
+<p class="Pp">The options are as follows:</p>
+<dl class="Bl-tag">
+  <dt id="level"><a class="permalink" href="#level"><code class="Fl">-level</code></a>
+    <var class="Ar">n</var></dt>
+  <dd>Start on map <var class="Ar">n</var>, from 1 to 12. The default is 1.</dd>
+  <dt id="version"><a class="permalink" href="#version"><code class="Fl">-version</code></a></dt>
+  <dd>Print the version and quit.</dd>
+</dl>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="KEYS"><a class="permalink" href="#KEYS">KEYS</a></h1>
+<dl class="Bl-tag">
+  <dt id="W"><a class="permalink" href="#W"><code class="Ic">W</code></a>,
+    <code class="Ic">S</code></dt>
+  <dd>Walk forward, and back.</dd>
+  <dt id="A"><a class="permalink" href="#A"><code class="Ic">A</code></a>,
+    <code class="Ic">D</code></dt>
+  <dd>Strafe left, and right.</dd>
+  <dt id="Left"><a class="permalink" href="#Left"><code class="Ic">Left</code></a>,
+    <code class="Ic">Right</code>, <code class="Ic">or</code>
+    <code class="Ic">Q</code>, <code class="Ic">E</code></dt>
+  <dd>Turn.</dd>
+  <dt id="Space"><a class="permalink" href="#Space"><code class="Ic">Space</code></a></dt>
+  <dd>Fire. Held, it fires again as fast as the gun allows.</dd>
+  <dt id="Esc"><a class="permalink" href="#Esc"><code class="Ic">Esc</code></a></dt>
+  <dd>Pause. On the pause menu, resume.</dd>
+  <dt id="Ctrl-C"><a class="permalink" href="#Ctrl-C"><code class="Ic">Ctrl-C</code></a></dt>
+  <dd>Quit at once.</dd>
+</dl>
+<p class="Pp">Letters work in either case.</p>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="ENVIRONMENT"><a class="permalink" href="#ENVIRONMENT">ENVIRONMENT</a></h1>
+<p class="Pp"><code class="Nm">rustwake</code> reads no environment variables of
+    its own. The glonk engine, which draws it, reads these:</p>
+<dl class="Bl-tag">
+  <dt id="COLORTERM"><a class="permalink" href="#COLORTERM"><code class="Ev">COLORTERM</code></a></dt>
+  <dd>&#x2018;<code class="Li">truecolor</code>&#x2019; or
+      &#x2018;<code class="Li">24bit</code>&#x2019; says the terminal shows true
+      color, and colors are sent exactly. Without it, or a
+      <code class="Ev">TERM</code> that says so, each color is sent as the
+      nearest one of the 256-color palette. Inside tmux or over ssh it may not
+      come through; set it where the terminal does show true color.</dd>
+  <dt id="TERM"><a class="permalink" href="#TERM"><code class="Ev">TERM</code></a></dt>
+  <dd>A name with &#x2018;<code class="Li">truecolor</code>&#x2019; or
+      &#x2018;<code class="Li">24bit</code>&#x2019; in it, or ending in
+      &#x2018;<code class="Li">-direct</code>&#x2019;, says the same.</dd>
+  <dt id="TERM_PROGRAM"><a class="permalink" href="#TERM_PROGRAM"><code class="Ev">TERM_PROGRAM</code></a></dt>
+  <dd>&#x2018;<code class="Li">Apple_Terminal</code>&#x2019; is the Terminal of
+      macOS, which leaves a thin line along the edge of half-block characters.
+      There the picture is drawn in whole cells, a little blockier.</dd>
+</dl>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="EXIT_STATUS"><a class="permalink" href="#EXIT_STATUS">EXIT
+  STATUS</a></h1>
+<p class="Pp">The <code class="Nm">rustwake</code> utility exits&#x00A0;0 on
+    success, and&#x00A0;&gt;0 if an error occurs. It exits 2 when an option is
+    wrong, or <code class="Fl">-level</code> names no map.</p>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="SEE_ALSO"><a class="permalink" href="#SEE_ALSO">SEE
+  ALSO</a></h1>
+<p class="Pp">The README, at
+    <a class="Lk" href="https://github.com/usrgames/rustwake">https://github.com/usrgames/rustwake</a>,
+    says how the game is made. glonk, the engine that draws it, is at
+    <a class="Lk" href="https://glonk.dev">https://glonk.dev</a>.</p>
+</section>
+</div>
+<table class="foot">
+  <tr>
+    <td class="foot-date">November 23, 2026</td>
+    <td class="foot-os">Ubuntu</td>
+  </tr>
+</table>
+</body>
+</html>

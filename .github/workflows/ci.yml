@@ -39,9 +39,9 @@ jobs:
           shellcheck -s sh site/install.sh scripts/pin.sh scripts/player.sh
 
   # The installer as a player runs it, on each kind of machine there is a runner for: from
-  # GitHub, and then against copies of the latest releases spoiled in each way it must refuse.
-  # The pin script is tried on the same copies. The tests of both skip themselves without the
-  # copies, so they are run here by name.
+  # GitHub, and then against a copy of tty1's latest release, spoiled in each way it must refuse.
+  # Its test skips itself without the copy, so it is run here by name. The pin script's test needs
+  # no download, so it runs in check too; here it is tried on each kind of machine.
   installer:
     strategy:
       fail-fast: false
@@ -62,32 +62,22 @@ jobs:
           mkdir "$home"
           HOME="$home" sh < site/install.sh
           "$home/.local/bin/tty1" --version
-      - name: the latest releases of tty1, the relay and rustwake
+      # tty1's repository is public, so its latest release, archives and all, is downloaded as a
+      # player's machine would. The releases of the relay and of rustwake are kept in the
+      # repository instead, since their repositories are private (#33).
+      - name: the latest release of tty1
         run: |
-          latest() { # repository, folder
-            mkdir -p "$2"
-            for f in manifest.json manifest.json.sig; do
-              curl -fsSL -o "$2/$f" "https://github.com/usrgames/$1/releases/latest/download/$f"
-            done
-          }
-          latest tty1 "$RUNNER_TEMP/tty1"
-          latest arcade "$RUNNER_TEMP/relay"
-          latest rustwake "$RUNNER_TEMP/rustwake"
+          mkdir -p "$RUNNER_TEMP/tty1"
+          for f in manifest.json manifest.json.sig; do
+            curl -fsSL -o "$RUNNER_TEMP/tty1/$f" "https://github.com/usrgames/tty1/releases/latest/download/$f"
+          done
           v=$(jq -r .version "$RUNNER_TEMP/tty1/manifest.json")
           for f in $(jq -r '.files[].name' "$RUNNER_TEMP/tty1/manifest.json"); do
             curl -fsSL -o "$RUNNER_TEMP/tty1/$f" "https://github.com/usrgames/tty1/releases/download/$v/$f"
           done
-          # Of rustwake's, only what the pin script takes: its page, its recording and its build
-          # for a web page.
-          v=$(jq -r .version "$RUNNER_TEMP/rustwake/manifest.json")
-          for f in $(jq -r '.files[].name | select(test("\\.(html|gif|png|wasm\\.gz)$") or . == "wasm_exec.js")' "$RUNNER_TEMP/rustwake/manifest.json"); do
-            curl -fsSL -o "$RUNNER_TEMP/rustwake/$f" "https://github.com/usrgames/rustwake/releases/download/$v/$f"
-          done
       - name: the installer and the pin script refuse what they must
         env:
           TTY1_RELEASE: ${{ runner.temp }}/tty1
-          RELAY_RELEASE: ${{ runner.temp }}/relay
-          RUSTWAKE_RELEASE: ${{ runner.temp }}/rustwake
         run: |
           go test ./internal/sitecheck -run '^(TestTheInstaller|TestThePinScript)$' -count=1 -v | tee installer.txt
           grep -- '--- PASS: TestTheInstaller ' installer.txt
