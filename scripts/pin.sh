@@ -52,11 +52,17 @@ done
 has sha256sum || has shasum || fail "Pinning a release takes sha256sum or shasum, and this machine has neither."
 
 cd "$(dirname "$0")/.."
-[ -f site/etc/allowed_signers ] && [ -f games.lock.json ] ||
-	fail "$(pwd) is not the site's repository: it has no site/etc/allowed_signers or games.lock.json."
+[ -f site/etc/allowed_signers ] && [ -f games.lock.json ] && [ -f games.json ] ||
+	fail "$(pwd) is not the site's repository: it has no site/etc/allowed_signers, games.lock.json or games.json."
 
+# A game's source is private, so its releases come from its release repository, NAME.6, named
+# as the manual writes it. tty1's come from its own.
+repo=$name
+if jq -e --arg n "$name" 'any(.[]; .name == $n)' games.json > /dev/null 2>&1; then
+	repo=$name.6
+fi
 releases=${PIN_RELEASES:-https://github.com/usrgames}
-at="${releases%/}/$name/releases/download/$version"
+at="${releases%/}/$repo/releases/download/$version"
 
 tmp=$(mktemp -d "${TMPDIR:-/tmp}/pin.XXXXXX")
 trap 'rm -rf "$tmp"' EXIT
