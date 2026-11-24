@@ -19,8 +19,8 @@
   },
   "tty1": {
     "files": {
-      "tty1.1.html": "0f0db45c034d329270994d1980c0b65a27fbc280eed402af96980b12f9d8acb6"
+      "tty1.1.html": "cca205ad6eed9bdd4e59d8b0fc29a69a563436bad3c27c0e99746d3fd4b47edc"
     },
-    "version": "v0.1.0"
+    "version": "v0.2.0"
   }
 }
