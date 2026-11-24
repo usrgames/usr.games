@@ -44,7 +44,7 @@ scripts/pin.sh rustwake v0.1.0
 make site
 ```
 
-It needs `curl`, `ssh-keygen` and `jq`. Nothing checks that a pin is the newest release, so until it is run the site shows the page of the release pinned before.
+A game's releases come from its release repository, `usrgames/NAME.6`, since its source is private; tty1's from `usrgames/tty1`. So a game can't be pinned again until its release repository has a release. It needs `curl`, `ssh-keygen` and `jq`. Nothing checks that a pin is the newest release, so until it is run the site shows the page of the release pinned before.
 
 ## The devlog
 

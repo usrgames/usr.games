@@ -52,7 +52,7 @@ func TestThePinScript(t *testing.T) {
 	t.Run("it pins a game's page, its recording and its build for a web page", func(t *testing.T) {
 		m := manifestOf(t, rustwake)
 		p := newPin(t, "{}\n")
-		p.serve(rustwake, "rustwake", m.Version)
+		p.serve(rustwake, "rustwake.6", m.Version)
 		p.pinned("rustwake", m.Version)
 		want := map[string]string{}
 		for _, f := range m.Files {
@@ -84,7 +84,7 @@ func TestThePinScript(t *testing.T) {
 		for _, path := range []string{"man/rustwake.6.html", "site/play/rustwake/v0.0.9/rustwake.wasm.gz", "site/play/rustwake/v0.0.9/wasm_exec.js"} {
 			write(t, filepath.Join(p.root, filepath.FromSlash(path)), []byte("older"), 0o644)
 		}
-		p.serve(rustwake, "rustwake", m.Version)
+		p.serve(rustwake, "rustwake.6", m.Version)
 		p.pinned("rustwake", m.Version)
 		if _, err := os.Stat(filepath.Join(p.root, "site", "play", "rustwake", "v0.0.9")); !errors.Is(err, fs.ErrNotExist) {
 			t.Errorf("wanted the older build's folder gone, got %v", err)
@@ -128,14 +128,14 @@ func TestThePinScript(t *testing.T) {
 	t.Run("a recording other than the one signed for", func(t *testing.T) {
 		v := manifestOf(t, rustwake).Version
 		p := newPin(t, "{}\n")
-		spoil(t, filepath.Join(p.serve(rustwake, "rustwake", v), "rustwake.gif"))
+		spoil(t, filepath.Join(p.serve(rustwake, "rustwake.6", v), "rustwake.gif"))
 		p.refused("The rustwake.gif downloaded is not the one the studio signed for", "rustwake", v)
 	})
 
 	t.Run("a build other than the one signed for", func(t *testing.T) {
 		v := manifestOf(t, rustwake).Version
 		p := newPin(t, "{}\n")
-		spoil(t, filepath.Join(p.serve(rustwake, "rustwake", v), "rustwake.wasm.gz"))
+		spoil(t, filepath.Join(p.serve(rustwake, "rustwake.6", v), "rustwake.wasm.gz"))
 		p.refused("The rustwake.wasm.gz downloaded is not the one the studio signed for", "rustwake", v)
 	})
 
@@ -244,14 +244,16 @@ func newPin(t *testing.T, lock string) *pinTrial {
 	write(t, filepath.Join(p.root, "scripts", "pin.sh"), readFile(t, filepath.Join("..", "..", "scripts", "pin.sh")), 0o755)
 	write(t, filepath.Join(p.root, "site", "etc", "allowed_signers"), readFile(t, filepath.Join(site, "etc", "allowed_signers")), 0o644)
 	write(t, filepath.Join(p.root, "games.lock.json"), []byte(lock), 0o644)
+	write(t, filepath.Join(p.root, "games.json"), readFile(t, filepath.Join("..", "..", "games.json")), 0o644)
 	return p
 }
 
 // serve puts a release's manifest, its signature, its pages, its recording and its build for a
-// web page where the script asks for NAME's VERSION, and returns that folder.
-func (p *pinTrial) serve(release, name, version string) string {
+// web page where the script asks for a release at VERSION in the repository repo, NAME.6 for a
+// game, and returns that folder.
+func (p *pinTrial) serve(release, repo, version string) string {
 	p.t.Helper()
-	dir := filepath.Join(p.tree, name, "releases", "download", version)
+	dir := filepath.Join(p.tree, repo, "releases", "download", version)
 	var files []string
 	for _, pattern := range []string{"*.html", "*.gif", "*.png", "*.wasm.gz", "wasm_exec.js"} {
 		found, err := filepath.Glob(filepath.Join(release, pattern))
