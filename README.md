@@ -68,6 +68,8 @@ Cloudflare builds the site from this repository.
 - **A merge to `main` deploys.** Until usr.games is attached, that deployment has no address: `wrangler.jsonc` turns the Worker's own address off, and a test holds it off.
 - **From opening day, a merge to `main` is a publication.**
 
+The live site is checked by hand, once it answers at usr.games: `gh workflow run live.yml` runs `TestTheLiveSite` against what is served, every page's policy, the go command's answers, the not-found page and the other addresses, and then every command the pages print, on fresh Linux and macOS machines. `USRGAMES_LIVE=<an address> go test ./internal/sitecheck -run TestTheLiveSite -v` runs the test alone, against usr.games or a version's own preview.
+
 ## How `go install usr.games/<name>` finds its code
 
 Every page, the not-found page included, carries one `go-import` tag for each module, so whichever address the `go` command asks, it reads where the code lives. A game's page is a flat file (`site/rustwake.html`), so that `usr.games/rustwake?go-get=1` answers with the page itself and not with a redirect.
