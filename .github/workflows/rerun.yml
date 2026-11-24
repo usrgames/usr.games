@@ -1,0 +1,19 @@
+name: rerun
+
+# When GitHub found no runner for a job of ci, as a macOS job sometimes waits 15 minutes and is
+# cancelled with no steps, rerun its failed jobs (usrgames/.github#14). The shared retry.yml
+# decides, and usrgames/.github's RELEASES.md says how. A workflow on workflow_run runs from
+# main, so this takes effect once merged.
+on:
+  workflow_run:
+    workflows: [ci]
+    types: [completed]
+
+permissions:
+  actions: write
+  checks: read
+
+jobs:
+  retry:
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    uses: usrgames/.github/.github/workflows/retry.yml@cde921bb0d42f4ba6096a0fd82cae45cc8dcd688
