@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "name": "relay",
+  "version": "v0.1.0",
+  "files": [
+    {
+      "name": "relay_darwin_amd64.tar.gz",
+      "size": 2844950,
+      "sha256": "17e4ba48337475da3ea15517d716984527bf82f7987b27a6f51d5bf709753eec",
+      "os": "darwin",
+      "arch": "amd64"
+    },
+    {
+      "name": "relay_darwin_arm64.tar.gz",
+      "size": 2611458,
+      "sha256": "09f65e893a6abc320929e876624fc381df3f18f1ecef48df1aac1eed4206f673",
+      "os": "darwin",
+      "arch": "arm64"
+    },
+    {
+      "name": "relay_linux_amd64.tar.gz",
+      "size": 2797686,
+      "sha256": "96b2e3c3ce61e87c4f76ff076bc3dd346f68f8241c76d500937492cead4c40c1",
+      "os": "linux",
+      "arch": "amd64"
+    },
+    {
+      "name": "relay_linux_arm64.tar.gz",
+      "size": 2514314,
+      "sha256": "be4073974c1148683e46e9bd7992d60ac94f16494fe9916caf2e4ff8b92e28f3",
+      "os": "linux",
+      "arch": "arm64"
+    }
+  ]
+}

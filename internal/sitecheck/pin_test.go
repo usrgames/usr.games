@@ -17,18 +17,22 @@ import (
 	"time"
 )
 
+// The releases the tests read, kept here because the repositories of the games and of the arcade
+// are private (usrgames/usr.games#33): of tty1 v0.1.0, the relay v0.1.0 and rustwake v0.1.0,
+// each release's manifest and signature, and the files of it the site uses. The files are the
+// same bytes as the pinned ones, so git keeps one of each.
+//
+// shortcut: their signatures stop checking out when the release certificate ends, on
+// 2027-11-21; sign them again at its renewal, as KEYS.md says.
+func kept(name string) string { return filepath.Join("testdata", "releases", name) }
+
 // scripts/pin.sh is how a release's manual page, a game's recording and its build for a web
-// page come onto the site:
-// each file is kept only once the studio's signature on the release's manifest checks out, and
-// the file against it. It is not served, but it decides what is, so it is tried here as the
-// installer is: on copies of the latest real releases of tty1, the relay and rustwake, which CI
-// downloads into the folders TTY1_RELEASE, RELAY_RELEASE and RUSTWAKE_RELEASE name, and runs
-// this by name.
+// page come onto the site: each file is kept only once the studio's signature on the release's
+// manifest checks out, and the file against it. It is not served, but it decides what is, so it
+// is tried here as the installer is, on real releases signed with the studio's real key: the
+// copies kept in testdata.
 func TestThePinScript(t *testing.T) {
-	tty1, relay, rustwake := os.Getenv("TTY1_RELEASE"), os.Getenv("RELAY_RELEASE"), os.Getenv("RUSTWAKE_RELEASE")
-	if tty1 == "" || relay == "" || rustwake == "" {
-		t.Skip("TTY1_RELEASE, RELAY_RELEASE and RUSTWAKE_RELEASE name no copies of the latest releases of tty1, the relay and rustwake")
-	}
+	tty1, relay, rustwake := kept("tty1"), kept("relay"), kept("rustwake")
 	version := manifestOf(t, tty1).Version
 	page, sum := manualOf(t, tty1)
 	a, b := strings.Repeat("a", 64), strings.Repeat("b", 64)

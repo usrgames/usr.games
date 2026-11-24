@@ -39,6 +39,7 @@ The certificate is inside every signature, so a release stops checking out on th
 
 2. Replace `site/etc/release-cert.pub` with it, in a pull request. The test checks that the root signed it.
 3. In each repository that releases, sign the latest release again, so that it carries the new certificate: run its release workflow by hand on that release's tag, with `again` ticked, and approve it. A program released since the renewal needs nothing.
+4. Sign again the copies of releases this repository's tests keep, in `internal/sitecheck/testdata/releases`: for each, `ssh-keygen -Y sign -f release-cert.pub -n release@usr.games manifest.json` with the release key beside its certificate, and replace its `manifest.json.sig`. The manifests stay as they are.
 
 The workflow that builds, signs and tries every release, and the manifest's format, are in [RELEASES.md](https://github.com/usrgames/.github/blob/main/RELEASES.md) of `usrgames/.github`.
 

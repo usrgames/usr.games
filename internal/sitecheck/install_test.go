@@ -47,14 +47,14 @@ func TestTheInstallerTrustsTheSitesRootKeyAlone(t *testing.T) {
 	}
 }
 
-// What the installer does, run as a player runs it, piped to sh. It is tried on copies of the
-// latest real releases, signed with the studio's real key, in the folders TTY1_RELEASE and
-// RELAY_RELEASE name; CI downloads them and runs this by name. Every sh and dash the machine has
-// runs every case.
+// What the installer does, run as a player runs it, piped to sh. It is tried on a copy of tty1's
+// latest real release, with its archives, in the folder TTY1_RELEASE names, which CI downloads
+// and runs this by name, and on the relay's release kept in testdata. Every sh and dash the
+// machine has runs every case.
 func TestTheInstaller(t *testing.T) {
-	tty1, relay := os.Getenv("TTY1_RELEASE"), os.Getenv("RELAY_RELEASE")
-	if tty1 == "" || relay == "" {
-		t.Skip("TTY1_RELEASE and RELAY_RELEASE name no copies of the latest releases of tty1 and the relay")
+	tty1, relay := os.Getenv("TTY1_RELEASE"), kept("relay")
+	if tty1 == "" {
+		t.Skip("TTY1_RELEASE names no copy of tty1's latest release, with its archives")
 	}
 	seen := map[string]bool{}
 	for _, name := range []string{"sh", "dash"} {

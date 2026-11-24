@@ -1,0 +1,40 @@
+{
+  "schema": 1,
+  "name": "tty1",
+  "version": "v0.1.0",
+  "files": [
+    {
+      "name": "tty1.1.html",
+      "size": 8128,
+      "sha256": "0f0db45c034d329270994d1980c0b65a27fbc280eed402af96980b12f9d8acb6"
+    },
+    {
+      "name": "tty1_darwin_amd64.tar.gz",
+      "size": 2993312,
+      "sha256": "a138b29f4ad5de7eac67318f0bde058e4efec6166d12982e5cee482b58c823db",
+      "os": "darwin",
+      "arch": "amd64"
+    },
+    {
+      "name": "tty1_darwin_arm64.tar.gz",
+      "size": 2750306,
+      "sha256": "8726aa88c84dedead9fc5d019c44b6c808e6414e8044a8e441a59b64cd61976e",
+      "os": "darwin",
+      "arch": "arm64"
+    },
+    {
+      "name": "tty1_linux_amd64.tar.gz",
+      "size": 2951455,
+      "sha256": "c14b738a1a39bb25cdf29be66a76a31b3080078fd7eb5cd2ea3774513e77a663",
+      "os": "linux",
+      "arch": "amd64"
+    },
+    {
+      "name": "tty1_linux_arm64.tar.gz",
+      "size": 2653849,
+      "sha256": "4bbb8d0768eabd43f3a2949f12cb9bcb94daccae1799f1efc50c9b06525b3c68",
+      "os": "linux",
+      "arch": "arm64"
+    }
+  ]
+}
