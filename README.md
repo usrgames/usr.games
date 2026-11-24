@@ -64,9 +64,8 @@ Cloudflare adds its Web Analytics script to each page of usr.games at the edge. 
 
 Cloudflare builds the site from this repository.
 
-- **A pull request gets a preview.** Cloudflare comments on it with the address.
-- **A merge to `main` deploys.** Until usr.games is attached, that deployment has no address: `wrangler.jsonc` turns the Worker's own address off, and a test holds it off.
-- **From opening day, a merge to `main` is a publication.**
+- **A pull request gets a preview.** Its address is on the build's page in Cloudflare's dashboard, through the check's Details link. It carries the account's name, so it stays out of issues and pull requests.
+- **A merge to `main` publishes.** It deploys to usr.games, the Worker's custom domain in `wrangler.jsonc`. The Worker's own address stays off, and a test holds both.
 
 ## How `go install usr.games/<name>` finds its code
 
