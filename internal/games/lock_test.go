@@ -11,7 +11,7 @@ import (
 // site cannot use, or names it wrongly, is refused before anything is made from it.
 func TestTheLockHoldsOnlyWhatTheSiteUses(t *testing.T) {
 	hash := strings.Repeat("a", 64)
-	modules := []string{"rustwake", "tty1"}
+	names := []string{"rustwake", "tty1"}
 	for _, c := range []struct {
 		what, lock, refused string
 	}{
@@ -39,7 +39,7 @@ func TestTheLockHoldsOnlyWhatTheSiteUses(t *testing.T) {
 			if err := os.WriteFile(path, []byte(c.lock), 0o644); err != nil {
 				t.Fatal(err)
 			}
-			pins, err := LoadLock(path, modules)
+			pins, err := LoadLock(path, names)
 			switch {
 			case c.refused == "" && err != nil:
 				t.Fatalf("wanted it read, got %v", err)

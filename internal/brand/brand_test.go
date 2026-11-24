@@ -49,7 +49,7 @@ type drawn struct {
 // they need no sketch.
 func recorded(t *testing.T) map[string]bool {
 	t.Helper()
-	pins, err := games.LoadLock(root("games.lock.json"), games.Modules(list(t)))
+	pins, err := games.LoadLock(root("games.lock.json"), games.Names(list(t)))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -214,7 +214,7 @@ func TestEveryLetterIsFiveBySeven(t *testing.T) {
 }
 
 func TestEveryNameCanBeDrawn(t *testing.T) {
-	for _, m := range games.Modules(list(t)) {
+	for _, m := range games.Names(list(t)) {
 		if !Has(m + "(6)") {
 			t.Errorf("wanted a drawing for every letter of %q; add the missing ones to letters.go", m)
 		}

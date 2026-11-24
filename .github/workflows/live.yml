@@ -66,16 +66,9 @@ jobs:
           done
           tty1 man > "$RUNNER_TEMP/tty1.man"
           head -n 3 "$RUNNER_TEMP/tty1.man"
-      - name: go install usr.games/NAME@latest for every module
+      # Only tty1 installs with Go: the games' and the arcade's source is private (#33).
+      - name: go install usr.games/tty1@latest
         run: |
           export GOBIN="$RUNNER_TEMP/bin" GOPATH="$RUNNER_TEMP/gopath"
-          games=$(curl -fsSL https://usr.games/etc/games.json | jq -r '.games[].name')
-          [ -n "$games" ]
-          for game in $games; do
-            go install "usr.games/$game@latest"
-            "$GOBIN/$game" -version
-          done
           go install usr.games/tty1@latest
           "$GOBIN/tty1" --version
-          go install usr.games/arcade/cmd/relay@latest
-          "$GOBIN/relay" --version
