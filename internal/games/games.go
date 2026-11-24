@@ -74,9 +74,13 @@ func ByName(list []Game) []Game {
 	return out
 }
 
-// Modules returns every module the site answers the go command for: the games in the order
-// they were added, then the tools.
-func Modules(list []Game) []string {
+// GoModules are the modules the site answers the go command for: tty1 alone, since the games'
+// and the arcade's source is private (usrgames/usr.games#33), and `go install` of them ends.
+var GoModules = []string{"tty1"}
+
+// Names returns every program the site has a page for, and may pin a release of: the games in
+// the order they were added, then the tools.
+func Names(list []Game) []string {
 	var out []string
 	for _, g := range list {
 		out = append(out, g.Name)

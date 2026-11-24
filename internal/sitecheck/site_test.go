@@ -83,7 +83,7 @@ func metas(page, name string) []string {
 // The tests below go over every page that is found. This one fails if a page was not.
 func TestTheSiteHasItsPages(t *testing.T) {
 	want := []string{"index.html", "404.html", "terminals.html", "plan.html", "privacy.html", "terms.html"}
-	for _, m := range games.Modules(list(t)) {
+	for _, m := range games.Names(list(t)) {
 		want = append(want, m+".html")
 	}
 	for _, name := range want {
@@ -93,13 +93,14 @@ func TestTheSiteHasItsPages(t *testing.T) {
 	}
 }
 
-// `go install usr.games/rustwake@latest` asks https://usr.games/rustwake?go-get=1 where the code
-// is, and reads the answer whatever its status. For a sub-path, or a name that is not a page,
-// the answer is the not-found page. So every page carries one go-import tag for every module,
-// and the command picks the one whose prefix fits. A module's own page also says where its
-// source can be read.
+// `go install usr.games/tty1@latest` asks https://usr.games/tty1?go-get=1 where the code is,
+// and reads the answer whatever its status. For a sub-path, or a name that is not a page, the
+// answer is the not-found page. So every page carries one go-import tag for every module the
+// site answers for, and the command picks the one whose prefix fits. A module's own page also
+// says where its source can be read. tty1 is the only one: the games' and the arcade's source is
+// private (#33).
 func TestEveryPageCarriesTheTagsTheGoCommandReads(t *testing.T) {
-	modules := games.Modules(list(t))
+	modules := games.GoModules
 	var want []string
 	for _, m := range modules {
 		want = append(want, fmt.Sprintf("usr.games/%s git https://github.com/usrgames/%s", m, m))
@@ -138,10 +139,10 @@ func TestTheTagsComeBeforeAnythingTheParserMightStopAt(t *testing.T) {
 	}
 }
 
-// A module's page is a flat file, site/rustwake.html. As a folder with an index.html, Cloudflare
-// would answer usr.games/rustwake?go-get=1 with a redirect to add the slash.
+// A module's page is a flat file, site/tty1.html. As a folder with an index.html, Cloudflare
+// would answer usr.games/tty1?go-get=1 with a redirect to add the slash.
 func TestAModulesPageIsAFlatFile(t *testing.T) {
-	for _, m := range games.Modules(list(t)) {
+	for _, m := range games.GoModules {
 		if _, err := os.Stat(filepath.Join(site, m, "index.html")); err == nil {
 			t.Errorf("wanted site/%s.html and no site/%s/index.html", m, m)
 		}
@@ -149,7 +150,7 @@ func TestAModulesPageIsAFlatFile(t *testing.T) {
 }
 
 // wrangler.jsonc tells Cloudflare which folder to serve and what to send for a path with no
-// file. Without the 404 page a request for usr.games/arcade/relay?go-get=1 would get an empty
+// file. Without the 404 page a request for usr.games/tty1/internal/cli?go-get=1 would get an empty
 // 404 with no tags. Cloudflare builds every pull request branch with `wrangler preview`, which
 // stops with an error unless the file has a previews block, even an empty one. The file must
 // stay plain JSON, with no comments, for this test to read it.

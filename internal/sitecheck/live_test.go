@@ -86,7 +86,7 @@ func TestTheLiveSite(t *testing.T) {
 
 	t.Run("the go command finds every module, from its page or from the not-found page", func(t *testing.T) {
 		var tags []string
-		modules := games.Modules(list(t))
+		modules := games.GoModules
 		for _, m := range modules {
 			tags = append(tags, fmt.Sprintf(`<meta name="go-import" content="usr.games/%s git https://github.com/usrgames/%s">`, m, m))
 		}

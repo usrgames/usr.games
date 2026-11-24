@@ -25,10 +25,10 @@ var (
 )
 
 // LoadLock reads the lock at path and returns its pins, A to Z. It refuses a pin of a program
-// not among modules, a version that is not vX.Y.Z, a hash that is not one, and anything but
+// not among names, a version that is not vX.Y.Z, a hash that is not one, and anything but
 // one manual page, a game's recording (NAME.gif and its still, NAME.png) and a game's build for
 // a web page (NAME.wasm.gz and the wasm_exec.js of the Go that built it), each both or neither.
-func LoadLock(path string, modules []string) ([]Pin, error) {
+func LoadLock(path string, names []string) ([]Pin, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
@@ -42,7 +42,7 @@ func LoadLock(path string, modules []string) ([]Pin, error) {
 	var out []Pin
 	for name, pin := range lock {
 		pin.Name = name
-		if !slices.Contains(modules, name) {
+		if !slices.Contains(names, name) {
 			return nil, fmt.Errorf("%s: %q is neither a game of games.json nor one of the tools", path, name)
 		}
 		if !versionText.MatchString(pin.Version) {

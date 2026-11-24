@@ -72,7 +72,7 @@ The live site is checked by hand, once it answers at usr.games: `gh workflow run
 
 ## How `go install usr.games/<name>` finds its code
 
-Every page, the not-found page included, carries one `go-import` tag for each module, so whichever address the `go` command asks, it reads where the code lives. A game's page is a flat file (`site/rustwake.html`), so that `usr.games/rustwake?go-get=1` answers with the page itself and not with a redirect.
+Only `usr.games/tty1` installs with Go: the games' and the arcade's source is private, so the site answers the `go` command for tty1 alone. Every page, the not-found page included, carries tty1's `go-import` tag, so whichever address the command asks, it reads where the code lives. tty1's page is a flat file (`site/tty1.html`), so that `usr.games/tty1?go-get=1` answers with the page itself and not with a redirect.
 
 ## License
 

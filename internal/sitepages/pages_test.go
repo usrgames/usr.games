@@ -22,6 +22,7 @@ import (
 	"html/template"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -184,7 +185,8 @@ func body(t *testing.T, file string, raw []byte) template.HTML {
 // is passed as a value because html/template drops a comment written in a template.
 const contact = template.HTML("<!--email_off-->hello@usr.games<!--/email_off-->")
 
-// goTags returns one go-import tag for every module and, on a module's own page, its go-source.
+// goTags returns one go-import tag for every module and, on a module's own page, its go-source:
+// the games' pages have none, since their source is private.
 // They are built here and not in a template because html/template will not fill in the content
 // of a meta tag.
 func goTags(modules []string, source string) template.HTML {
@@ -192,7 +194,7 @@ func goTags(modules []string, source string) template.HTML {
 	for _, m := range modules {
 		fmt.Fprintf(&b, "<meta name=\"go-import\" content=\"usr.games/%s git https://github.com/usrgames/%s\">\n", m, m)
 	}
-	if source != "" {
+	if slices.Contains(modules, source) {
 		repo := "https://github.com/usrgames/" + source
 		fmt.Fprintf(&b, "<meta name=\"go-source\" content=\"usr.games/%s %s %s/tree/main{/dir} %s/blob/main{/dir}/{file}#L{line}\">\n", source, repo, repo, repo)
 	}
@@ -332,12 +334,12 @@ func pages(t *testing.T) map[string]string {
 		t.Fatal(err)
 	}
 
-	modules, sorted := games.Modules(list), games.ByName(list)
+	names, sorted := games.Names(list), games.ByName(list)
 	count := fmt.Sprintf("%d games.", len(list))
 	if len(list) == 1 {
 		count = "1 game."
 	}
-	pins, err := games.LoadLock(root("games.lock.json"), modules)
+	pins, err := games.LoadLock(root("games.lock.json"), names)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -357,7 +359,7 @@ func pages(t *testing.T) map[string]string {
 		man[m.Name] = m.Section
 	}
 	base := func(title, text, source string) page {
-		return page{Title: title, GoTags: goTags(modules, source), Describe: describe(title, text, false), Games: sorted, Count: count, Example: list[0].Name, Rec: rec, Play: play, Player: player, Man: man}
+		return page{Title: title, GoTags: goTags(games.GoModules, source), Describe: describe(title, text, false), Games: sorted, Count: count, Example: list[0].Name, Rec: rec, Play: play, Player: player, Man: man}
 	}
 
 	out := map[string]string{}
