@@ -76,4 +76,9 @@ Only `usr.games/tty1` installs with Go: the games' and the arcade's source is pr
 
 ## License
 
-MIT. See [LICENSE](LICENSE). The typeface in `site/media/fonts` is under the SIL Open Font License; its text is beside it.
+This site's own code and pages are MIT: see [LICENSE](LICENSE). What it holds of others' is under their terms, not this repository's:
+
+- what comes from a release is under that release's licence: a game's build in `site/play/<game>/`, its recording (`site/media/<game>/<game>.gif` and `.png`), the manual pages in `man/` and `site/man/`, and the copies of releases the tests read in `internal/sitecheck/testdata/releases/`;
+- glonk's player in `site/play/glonk/` is glonk's and xterm.js's, MIT, with their licences beside it;
+- `wasm_exec.js`, beside each game, is Go's;
+- the typeface in `site/media/fonts` is under the SIL Open Font License, its text beside it.
