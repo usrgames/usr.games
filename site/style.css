@@ -79,6 +79,17 @@ label.hold:hover { text-decoration: underline; }
 label.hold::before { content: "[ ] "; content: "[ ] " / ""; }
 .hold:checked ~ label.hold::before { content: "[x] "; content: "[x] " / ""; }
 .hold:focus-visible ~ label.hold { outline: 2px dashed var(--hot); outline-offset: 3px; }
+/* Play, on a game's page, is play.js's: a button in the reversed voice, as the front page's
+   Play is. While the game runs it takes the page's whole width, its screen goes, and what is said
+   of the game follows below. */
+button.rev { font: inherit; border: 0; padding: 0 1ch; cursor: pointer; }
+button.rev:focus-visible { outline: 2px dashed var(--hot); outline-offset: 3px; }
+button.rev:disabled { cursor: progress; }
+.page.playing { grid-template-columns: minmax(0, 1fr); }
+.page.playing > .att { display: none; }
+.game { justify-self: center; max-width: 100%; }
+.bar { display: flex; flex-wrap: wrap; gap: 0 2ch; align-items: baseline; }
+
 /* On the front page, pause shows only under a screen that has a recording to pause. */
 .preview:has(> .att:not([hidden]) > img.pic) > label.hold { display: none; }
 

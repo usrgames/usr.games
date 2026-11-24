@@ -16,8 +16,8 @@ The site of usr.games, an arcade in your terminal. It is plain files in `site/`,
 | `scripts/player.sh` | Keeps glonk's player at one tag. A game built with a glonk whose page protocol changed needs the player of that glonk, so move the two together. |
 | `plan/` | The devlog's notes, one text file each. The page at `/plan` and its feed are made from them. |
 | `site/` | What is served. The pages and the drawings in it are made files: do not edit them by hand. |
-| `site/style.css`, `site/floor.js` | The stylesheet and the site's one script, written by hand. |
-| `site/_headers` | What a browser may load on a page, sent by Cloudflare with every answer. Not served as a file. |
+| `site/style.css`, `site/floor.js`, `site/play.js` | The stylesheet, the front page's script and the script that plays a game in its page, written by hand. `play.js` loads nothing until a visitor asks to play, and offers Play only with a fine pointer, room and WebGL2: without WebGL2, xterm.js draws with style attributes, which the content policy refuses. |
+| `site/_headers` | What a browser may load on a page, sent by Cloudflare with every answer. Not served as a file. A page that plays its game has the same policy with `'wasm-unsafe-eval'`, and nothing else, more; a test holds every such page to it. |
 | `internal/brand` | Draws the sign, the names, the icons and the link-preview card. |
 | `internal/plan` | Reads the notes in `plan/`. |
 | `internal/sitepages` | Writes the pages, and the devlog's feed, from `games.json`, the notes and its templates. |

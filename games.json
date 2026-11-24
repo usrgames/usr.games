@@ -16,6 +16,7 @@
     "about": "A prehistoric lost world, built and broken one block at a time: cave people among dinosaurs, fire mountains and falling stars.",
     "facts": "A world with no end, made from a seed.",
     "picture": "A sketch of skyspear: stepped land, a tree, a hunter with a spear, and a falling star.",
+    "cells": [80, 24],
     "keys": [["W A S D", "walk"], ["Arrows", "look"], ["Space", "jump"], ["Q E", "break, place"], ["I", "your things"], ["Esc", "pause"]]
   },
   {

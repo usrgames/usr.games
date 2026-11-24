@@ -52,6 +52,7 @@ Lines in use:
 
 - **A row of the listing.** The front page is `ls -l /usr/games`. Each game is a row; the row you are on is reversed. A column says how many can play: `1p`, `2p`, `2p net`.
 - **An attract screen.** Beside the listing, one screen shows the game you are on: its recording, its name, what it is, and an invitation to play.
+- **Play.** On a game's page, Play runs the game itself in place of its screen, which widens to the whole page while it runs. The game keeps its own colours. Without a keyboard or room, a note says so and points home.
 
 The listing grows downward and nothing is redesigned. The line under it counts the games. From eight games up it is meant to gain three controls that rewrite the command (A to Z, newest first, only games against someone); those are not built yet.
 

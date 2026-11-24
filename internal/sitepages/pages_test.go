@@ -41,7 +41,7 @@ type page struct {
 	Describe template.HTML // the description, and on the front page the link-preview tags
 	Home     bool
 	NoIndex  bool
-	Script   bool
+	Scripts  []string     // the scripts the page loads, each a file of the site
 	Count    string       // "3 games."
 	Games    []games.Game // A to Z, as a listing prints them
 	Game     *games.Game
@@ -50,6 +50,8 @@ type page struct {
 	Notes    []plan.Note       // the devlog, newest first
 	Contact  template.HTML     // where the notices say to write
 	Rec      map[string]bool   // the games whose screens show their recording
+	Play     map[string]string // the version of each game that can be played in its page
+	Player   string            // the folder of glonk's player, /play/glonk/VERSION/
 	Man      map[string]string // the section of each program with a manual page on the site
 	Manuals  []manual          // every manual page, A to Z
 	Manual   *manual           // on a manual's own page, that manual
@@ -339,8 +341,12 @@ func pages(t *testing.T) map[string]string {
 	if err != nil {
 		t.Fatal(err)
 	}
-	mans, rec := manuals(t, pins), recordings(t, pins)
-	builds(t, pins)
+	mans, rec, play := manuals(t, pins), recordings(t, pins), builds(t, pins)
+	kept, err := filepath.Glob(root("site/play/glonk/*"))
+	if err != nil || len(kept) != 1 {
+		t.Fatalf("wanted one version of glonk's player in site/play/glonk (scripts/player.sh keeps it), got %v %v", kept, err)
+	}
+	player := "/play/glonk/" + filepath.Base(kept[0]) + "/"
 	for _, g := range list {
 		if rec[g.Name] && g.Recording == "" {
 			t.Fatalf("games.json: %s: its recording is pinned, so it needs a recording: what the recording shows, for anyone who cannot see it", g.Name)
@@ -351,7 +357,7 @@ func pages(t *testing.T) map[string]string {
 		man[m.Name] = m.Section
 	}
 	base := func(title, text, source string) page {
-		return page{Title: title, GoTags: goTags(modules, source), Describe: describe(title, text, false), Games: sorted, Count: count, Example: list[0].Name, Rec: rec, Man: man}
+		return page{Title: title, GoTags: goTags(modules, source), Describe: describe(title, text, false), Games: sorted, Count: count, Example: list[0].Name, Rec: rec, Play: play, Player: player, Man: man}
 	}
 
 	out := map[string]string{}
@@ -365,7 +371,7 @@ func pages(t *testing.T) map[string]string {
 
 	const pitch = "Games that run in your terminal. Play them here, or take them home. Free play."
 	home := base("usr.games: an arcade in your terminal", pitch, "")
-	home.Home, home.Script = true, true
+	home.Home, home.Scripts = true, []string{"/floor.js"}
 	home.Describe = describe(home.Title, pitch, true)
 	render("index.html", "index", home)
 
@@ -373,6 +379,9 @@ func pages(t *testing.T) map[string]string {
 		g := sorted[i]
 		p := base(g.Name+"(6): usr.games", g.Blurb, g.Name)
 		p.Game = &g
+		if play[g.Name] != "" {
+			p.Scripts = []string{"/play.js"}
+		}
 		for _, other := range sorted {
 			if other.Name != g.Name {
 				p.Others = append(p.Others, other)
