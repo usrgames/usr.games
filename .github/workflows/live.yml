@@ -1,0 +1,81 @@
+name: live
+
+# The live site, as a visitor finds it, run by hand: gh workflow run live.yml. First the test of
+# what usr.games serves, then every command the pages print, on fresh machines of each kind there
+# is a runner for. A game's own `tty1 run` and `tty1 doctor` need a terminal, and are tried by
+# hand.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  GOTOOLCHAIN: local
+
+jobs:
+  site:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.27"
+      - name: what usr.games serves
+        env:
+          USRGAMES_LIVE: https://usr.games
+        run: |
+          go test ./internal/sitecheck -run '^TestTheLiveSite$' -count=1 -v | tee live.txt
+          grep -- '--- PASS: TestTheLiveSite ' live.txt
+
+  commands:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    # A command that fails in a pipe fails the step.
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.27"
+          cache: false
+      - name: curl -fsSL https://usr.games/install.sh | sh
+        run: |
+          home="$RUNNER_TEMP/home"
+          mkdir "$home"
+          HOME="$home" sh -c 'curl -fsSL https://usr.games/install.sh | sh'
+          "$home/.local/bin/tty1" --version
+      - name: tty1 ls, then tty1 install and tty1 man for every game
+        run: |
+          export HOME="$RUNNER_TEMP/home" PATH="$RUNNER_TEMP/home/.local/bin:$PATH" MANPAGER=cat
+          tty1 ls
+          games=$(curl -fsSL https://usr.games/etc/games.json | jq -r '.games[].name')
+          [ -n "$games" ]
+          for game in $games; do
+            tty1 install "$game"
+            tty1 man "$game" > "$RUNNER_TEMP/$game.man"
+            head -n 3 "$RUNNER_TEMP/$game.man"
+          done
+          tty1 man > "$RUNNER_TEMP/tty1.man"
+          head -n 3 "$RUNNER_TEMP/tty1.man"
+      - name: go install usr.games/NAME@latest for every module
+        run: |
+          export GOBIN="$RUNNER_TEMP/bin" GOPATH="$RUNNER_TEMP/gopath"
+          games=$(curl -fsSL https://usr.games/etc/games.json | jq -r '.games[].name')
+          [ -n "$games" ]
+          for game in $games; do
+            go install "usr.games/$game@latest"
+            "$GOBIN/$game" -version
+          done
+          go install usr.games/tty1@latest
+          "$GOBIN/tty1" --version
+          go install usr.games/arcade/cmd/relay@latest
+          "$GOBIN/relay" --version
