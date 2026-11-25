@@ -11,11 +11,13 @@
   },
   "skyspear": {
     "files": {
-      "skyspear.6.html": "f9a01119571cdd3dbc7ed06ee0794271ad635cbb11506370ec316b13ce96c74f",
-      "skyspear.wasm.gz": "1c3d04d3ee998a705b0833d741ad10f07c0497ae237067e5edd69102ac6aae00",
+      "skyspear.6.html": "33bce9a953626a4b0087218cac2eaa83537e6ab1f7e2d5685dc8bb75232eef6e",
+      "skyspear.gif": "50f1a0b212d6c08d92752e7c31a552dc9b8095c9cb3aa6d7c8b8f1d099117ec4",
+      "skyspear.png": "7a2d617b53149a82eeba7e9b2d5e403cf1225763b8ec21f4a83fabc8ff874462",
+      "skyspear.wasm.gz": "d790137129d376bb0d6784e7c812b2e7dd795d685eeb7819f73b91433916dcb8",
       "wasm_exec.js": "0c949f4996f9a89698e4b5c586de32249c3b69b7baadb64d220073cc04acba14"
     },
-    "version": "v1.0.0"
+    "version": "v1.0.1"
   },
   "tty1": {
     "files": {
