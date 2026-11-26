@@ -27,6 +27,7 @@
     "about": "Eight-ball pool. Practice alone, share a keyboard, or play a friend online with a room code.",
     "facts": "Press V and the camera flies down behind the cue ball.",
     "picture": "A sketch of breakshot: a pool table, the rack, the cue ball and where it is aimed.",
+    "recording": "breakshot playing itself: seen from above, the cue lines up on the cue ball, aimed down a dotted line at the rack, and the break spreads the balls across the green table.",
     "keys": [["Left Right", "aim"], ["Space", "power, then shoot"], ["V", "behind the cue ball"], ["M", "sound"], ["Esc", "menu"]]
   }
 ]

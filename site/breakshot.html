@@ -12,6 +12,7 @@
 <link rel="icon" href="/favicon.ico" sizes="32x32">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<script src="/play.js" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to the page</a>
@@ -24,7 +25,7 @@
   <p class="cols"><a href="/breakshot" class="rev" aria-current="page">breakshot(6)</a><a href="/rustwake">rustwake(6)</a><a href="/skyspear">skyspear(6)</a></p>
 </nav>
 <main id="main" class="page">
-  <div class="att" id="play"><img class="pic" src="/media/breakshot/sketch.svg" alt="A sketch of breakshot: a pool table, the rack, the cue ball and where it is aimed." width="660" height="340"></div>
+  <div class="att" id="play" data-name="breakshot" data-game="/play/breakshot/v0.10.0/breakshot.wasm.gz" data-exec="/play/breakshot/v0.10.0/wasm_exec.js" data-player="/play/glonk/v0.16.2/" data-cols="120" data-rows="40"><input type="checkbox" id="hold" class="hold"><div class="screen"><img class="pic" src="/media/breakshot/breakshot.png" alt="breakshot playing itself: seen from above, the cue lines up on the cue ball, aimed down a dotted line at the rack, and the break spreads the balls across the green table." width="660" height="336"><img class="pic moving" src="/media/breakshot/breakshot.gif" alt="" width="660" height="336" loading="lazy"></div><label for="hold" class="hold">pause</label></div>
   <div class="side">
     <div>
       <h1 class="title"><img src="/media/breakshot/name.svg" alt="breakshot(6)" width="720" height="80"></h1>
@@ -34,6 +35,7 @@
     <section>
       <h2>Keys</h2>
       <dl class="keys"><dt>Left Right</dt><dd class="dim">aim</dd><dt>Space</dt><dd class="dim">power, then shoot</dd><dt>V</dt><dd class="dim">behind the cue ball</dd><dt>M</dt><dd class="dim">sound</dd><dt>Esc</dt><dd class="dim">menu</dd></dl>
+      <p class="dim note">Every key and option is in <a href="/man/breakshot">its manual page</a>.</p>
     </section>
     <section>
       <h2>Take it home</h2>

@@ -1,4 +1,14 @@
 {
+  "breakshot": {
+    "files": {
+      "breakshot.6.html": "7434ed255bed014a747115dd82bb49c92bd0bbfaaadf2a3e6e62882c251a9f7c",
+      "breakshot.gif": "9d7e64bdcbb4bebbdd6531ca532caeaa4e7755d00af8dbeff5652e270b58c507",
+      "breakshot.png": "e1e482c5201c4b8e8f3b9d7d822348770c58c1630eea09973646a3c69da19f1f",
+      "breakshot.wasm.gz": "f7dc968edfd5b8606e22834b1ab77837598070864928471f613e89d20add0658",
+      "wasm_exec.js": "0c949f4996f9a89698e4b5c586de32249c3b69b7baadb64d220073cc04acba14"
+    },
+    "version": "v0.10.0"
+  },
   "rustwake": {
     "files": {
       "rustwake.6.html": "2cb3d6bd62bc93de02830d204cdee5aa3ee62fca0d7a3178d22f315daf6e9b7a",

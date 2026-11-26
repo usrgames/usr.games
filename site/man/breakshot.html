@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="go-import" content="usr.games/tty1 git https://github.com/usrgames/tty1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The manual of breakshot(6): usr.games</title>
+<meta name="description" content="The manual page of breakshot(6), as its release v0.10.0 ships it.">
+<link rel="preload" href="/media/fonts/VT323-Regular.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="stylesheet" href="/style.css">
+<link rel="alternate" type="application/atom+xml" title="usr.games: the plan" href="/plan.xml">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the page</a>
+<div class="tube">
+<header class="mast">
+  <a class="sign" href="/"><img src="/sign.svg" alt="usr.games, the front page" width="720" height="80"></a>
+</header>
+<main id="main" class="doc">
+  <div>
+    <h1 class="hot">breakshot(6)</h1>
+    <p class="about">The manual page that comes home with <a href="/breakshot">breakshot</a> v0.10.0.</p>
+  </div>
+  <p><span class="dim">$</span> tty1 man breakshot</p>
+  <div class="manual">
+<section class="Sh">
+<h2 class="Sh" id="NAME"><a class="permalink" href="#NAME">NAME</a></h2>
+<p class="Pp"><code class="Nm">breakshot</code> &#x2014;
+    <span class="Nd">eight-ball pool in the terminal</span></p>
+</section>
+<section class="Sh">
+<h2 class="Sh" id="SYNOPSIS"><a class="permalink" href="#SYNOPSIS">SYNOPSIS</a></h2>
+<table class="Nm">
+  <tr>
+    <td><code class="Nm">breakshot</code></td>
+    <td>[<code class="Fl">-mute</code>] [<code class="Fl">-relay</code>
+      <var class="Ar">url</var>] [<code class="Fl">-version</code>]</td>
+  </tr>
+</table>
+</section>
+<section class="Sh">
+<h2 class="Sh" id="DESCRIPTION"><a class="permalink" href="#DESCRIPTION">DESCRIPTION</a></h2>
+<p class="Pp"><code class="Nm">breakshot</code> is eight-ball pool, drawn in the
+    terminal. Play a match for two at one keyboard, play the computer, practice
+    alone, or play someone on another machine online. Everything on screen and
+    every sound is made by code.</p>
+<p class="Pp">The table is seen from above. <code class="Ic">V</code> flies the
+    camera down behind the cue ball, to aim and shoot from there, and back up
+    again.</p>
+<p class="Pp">The game needs a terminal that shows true color, at least 80
+    columns by 24 rows. A larger window, or a smaller font, gives a sharper
+    table. In a smaller one the game waits for it to grow, and
+    <code class="Ic">Esc</code> quits.</p>
+<p class="Pp">The menu offers these, chosen with <code class="Ic">Up</code>,
+    <code class="Ic">Down</code> and <code class="Ic">Enter</code>, or by
+    pointing at one and clicking:</p>
+<dl class="Bl-tag">
+  <dt>Practice alone</dt>
+  <dd>One player. Any ball may be hit, only a potted cue ball is a foul, and the
+      8 must go last.</dd>
+  <dt>Two players</dt>
+  <dd>A match for two, taking turns at one keyboard.</dd>
+  <dt>Play the computer</dt>
+  <dd>You are player 1 and break; the computer plays player 2. It plays straight
+      pots, not banks or safeties.</dd>
+  <dt>Host online match</dt>
+  <dd>Make a room for a player on another machine; see
+      <a class="Sx" href="#ONLINE_PLAY">ONLINE PLAY</a>.</dd>
+  <dt>Join online match</dt>
+  <dd>Go into a room by its code.</dd>
+  <dt>Rules: simple</dt>
+  <dd>Switch the next match between the simple rules and the strict ones; see
+      <a class="Sx" href="#RULES">RULES</a>. Online, the host's choice holds for
+      both.</dd>
+  <dt>Quit</dt>
+  <dd>Leave the game.</dd>
+</dl>
+<p class="Pp">Under the noises of the table are the far games of the hall and
+    the murmur of the room.</p>
+<p class="Pp">The options are as follows:</p>
+<dl class="Bl-tag">
+  <dt id="mute"><a class="permalink" href="#mute"><code class="Fl">-mute</code></a></dt>
+  <dd>Play without sound. A machine with no audio device plays without it
+    too.</dd>
+  <dt id="relay"><a class="permalink" href="#relay"><code class="Fl">-relay</code></a>
+    <var class="Ar">url</var></dt>
+  <dd>Play online matches through the relay at <var class="Ar">url</var>. The
+      default is
+      <a class="Lk" href="https://relay.usr.games">https://relay.usr.games</a>.
+      An empty <var class="Ar">url</var>, as in <code class="Fl">-relay</code>
+      &quot;&quot;, turns online play off, and the menu leaves out its two
+      online items.</dd>
+  <dt id="version"><a class="permalink" href="#version"><code class="Fl">-version</code></a></dt>
+  <dd>Print the version and quit.</dd>
+</dl>
+</section>
+<section class="Sh">
+<h2 class="Sh" id="RULES"><a class="permalink" href="#RULES">RULES</a></h2>
+<p class="Pp">Eight-ball with simple fouls, and no shot to call.</p>
+<ul class="Bl-bullet">
+  <li>The breaker puts the cue ball down anywhere behind the head string, the
+      line a quarter of the way down the table.</li>
+  <li>The table is open after the break. The first ball potted after it gives
+      the shooter that ball's group, solids (1 to 7) or stripes (9 to 15).</li>
+  <li>Potting one of your own keeps the turn.</li>
+  <li>A foul gives the other player the cue ball in hand, to put down anywhere:
+      potting the cue ball, hitting no ball, or hitting first a ball that is not
+      yours.</li>
+  <li>Pot the 8 after all of your group to win. Potting it earlier, or with a
+      foul in the same shot, loses. On the break it goes back on the table.</li>
+</ul>
+<p class="Pp">The strict rules add to a match:</p>
+<ul class="Bl-bullet">
+  <li>A break that pots nothing must send at least four object balls to a
+      cushion, or it is a foul.</li>
+  <li>After the break, a shot that pots nothing must send some ball, the cue
+      ball too, to a cushion after the cue ball's first hit, or it is a
+    foul.</li>
+  <li>The pocket of the 8 is called, and the 8 in any other loses. The call
+      follows the aim, to the pocket the 8 is sent toward, until
+      <code class="Ic">P</code> or a click on a pocket calls another; see
+      <a class="Sx" href="#KEYS">KEYS</a>.</li>
+</ul>
+</section>
+<section class="Sh">
+<h2 class="Sh" id="KEYS"><a class="permalink" href="#KEYS">KEYS</a></h2>
+<dl class="Bl-tag">
+  <dt id="Left"><a class="permalink" href="#Left"><code class="Ic">Left</code></a>,
+    <code class="Ic">Right</code></dt>
+  <dd>Aim; held, the cue turns faster.</dd>
+  <dt id="Up"><a class="permalink" href="#Up"><code class="Ic">Up</code></a>,
+    <code class="Ic">Down</code></dt>
+  <dd>Aim in fine steps.</dd>
+  <dt id="W"><a class="permalink" href="#W"><code class="Ic">W</code></a>,
+    <code class="Ic">S</code>, <code class="Ic">A</code>,
+    <code class="Ic">D</code></dt>
+  <dd>Move the tip, where the cue meets the cue ball: up and down, left and
+      right. Above the middle the cue ball follows on after a hit, below it
+      draws back, and to one side it spins off a cushion that way. The small cue
+      ball on the right rail shows the tip as a red dot. Each shot starts from
+      the middle.</dd>
+  <dt id="Space"><a class="permalink" href="#Space"><code class="Ic">Space</code></a></dt>
+  <dd>Start the power meter, and press it again to shoot. Where the terminal
+      says when a key is let go, as one with the kitty keyboard protocol does,
+      Space may be held instead: the meter rises while it is down, and letting
+      go shoots. A tap still starts the meter running.</dd>
+  <dt id="Esc"><a class="permalink" href="#Esc"><code class="Ic">Esc</code></a></dt>
+  <dd>Call the shot off while the meter runs. Otherwise go back to the menu, and
+      from the menu quit.</dd>
+  <dt id="V"><a class="permalink" href="#V"><code class="Ic">V</code></a></dt>
+  <dd>Fly the camera down behind the cue ball, and back up.</dd>
+  <dt id="M"><a class="permalink" href="#M"><code class="Ic">M</code></a></dt>
+  <dd>Turn the sound off or on.</dd>
+  <dt id="P"><a class="permalink" href="#P"><code class="Ic">P</code></a></dt>
+  <dd>On the 8 under the strict rules, call the next pocket for it. The call
+      then stays until the shot.</dd>
+  <dt id="Enter"><a class="permalink" href="#Enter"><code class="Ic">Enter</code></a></dt>
+  <dd>Start another rack once a game is over.</dd>
+</dl>
+<p class="Pp">With the cue ball in hand:</p>
+<dl class="Bl-tag">
+  <dt>arrow keys</dt>
+  <dd>Move it.</dd>
+  <dt id="Enter~2"><a class="permalink" href="#Enter~2"><code class="Ic">Enter</code></a>,
+    <code class="Ic">Space</code></dt>
+  <dd>Put it down.</dd>
+  <dt id="C"><a class="permalink" href="#C"><code class="Ic">C</code></a></dt>
+  <dd>Pick it up again, before the shot.</dd>
+</dl>
+<p class="Pp">The mouse plays too. In the menu, the pointer selects an item and
+    a click chooses it. At the table, from above, move the pointer to aim. Press
+    the left button, drag away from it to set the power, and let go to shoot.
+    With the cue ball in hand, the pointer moves it, a click puts it down, and a
+    click on it picks it up again. On the 8 under the strict rules, a click on a
+    pocket calls it. A click on the small cue ball on the right rail puts the
+    tip there. From behind the cue ball only the keys, and that click, play at
+    the table. Once a game is over, a click on the box that says how it ended
+    does what <code class="Ic">Enter</code> does.</p>
+</section>
+<section class="Sh">
+<h2 class="Sh" id="ONLINE_PLAY"><a class="permalink" href="#ONLINE_PLAY">ONLINE
+  PLAY</a></h2>
+<p class="Pp">Two players on two machines, anywhere, with no ports to open at
+    home:</p>
+<ol class="Bl-enum">
+  <li>One chooses Host online match. The game makes a room and shows its code,
+      four letters.</li>
+  <li>The other chooses Join online match, types the code, and presses
+      <code class="Ic">Enter</code>. <code class="Ic">Backspace</code> takes
+      back a letter.</li>
+  <li>The host breaks. On the other player's turn your keys and the mouse do
+      nothing, and you watch them play.</li>
+  <li id="Esc~2"><a class="permalink" href="#Esc~2"><code class="Ic">Esc</code></a>
+      leaves the room, or the match. At the end, both press
+      <code class="Ic">Enter</code> for another rack.</li>
+</ol>
+<p class="Pp">The games meet through a small relay on the internet, which passes
+    the shots between them and keeps nothing once a match is over.
+    <code class="Fl">-relay</code> chooses another one.</p>
+</section>
+<section class="Sh">
+<h2 class="Sh" id="ENVIRONMENT"><a class="permalink" href="#ENVIRONMENT">ENVIRONMENT</a></h2>
+<p class="Pp"><code class="Nm">breakshot</code> reads no environment variables
+    of its own. The glonk engine, which draws it, reads these:</p>
+<dl class="Bl-tag">
+  <dt id="COLORTERM"><a class="permalink" href="#COLORTERM"><code class="Ev">COLORTERM</code></a></dt>
+  <dd>&#x2018;<code class="Li">truecolor</code>&#x2019; or
+      &#x2018;<code class="Li">24bit</code>&#x2019; says the terminal shows true
+      color, and colors are sent exactly. Without it, or a
+      <code class="Ev">TERM</code> that says so, each color is sent as the
+      nearest one of the 256-color palette. Inside tmux or over ssh it may not
+      come through; set it where the terminal does show true color.</dd>
+  <dt id="TERM"><a class="permalink" href="#TERM"><code class="Ev">TERM</code></a></dt>
+  <dd>A name with &#x2018;<code class="Li">truecolor</code>&#x2019; or
+      &#x2018;<code class="Li">24bit</code>&#x2019; in it, or ending in
+      &#x2018;<code class="Li">-direct</code>&#x2019;, says the same.</dd>
+  <dt id="TERM_PROGRAM"><a class="permalink" href="#TERM_PROGRAM"><code class="Ev">TERM_PROGRAM</code></a></dt>
+  <dd>&#x2018;<code class="Li">Apple_Terminal</code>&#x2019; is the Terminal of
+      macOS, which leaves a thin line along the edge of half-block characters.
+      There the picture is drawn in whole cells, a little blockier.</dd>
+</dl>
+</section>
+<section class="Sh">
+<h2 class="Sh" id="EXIT_STATUS"><a class="permalink" href="#EXIT_STATUS">EXIT
+  STATUS</a></h2>
+<p class="Pp">The <code class="Nm">breakshot</code> utility exits&#x00A0;0 on
+    success, and&#x00A0;&gt;0 if an error occurs.</p>
+</section>
+</div>
+</main>
+<footer class="foot">
+  <p class="dim">$ ls /usr/share/games</p>
+  <p class="ls"><a href="/tty1">tty1</a><a href="/arcade">arcade</a><a href="/man">man</a><a href="/terminals">terminals</a><a href="/plan">plan</a><a href="/privacy">privacy</a><a href="/terms">terms</a></p>
+  <p class="dim">Built on <a href="https://glonk.dev">glonk</a>. A directory since 1971. A studio since 2026. Operated by KOHANTIC LLC.</p>
+</footer>
+</div>
+</body>
+</html>
