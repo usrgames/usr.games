@@ -90,9 +90,6 @@ button.rev:disabled { cursor: progress; }
 .game { justify-self: center; max-width: 100%; }
 .bar { display: flex; flex-wrap: wrap; gap: 0 2ch; align-items: baseline; }
 
-/* On the front page, pause shows only under a screen that has a recording to pause. */
-.preview:has(> .att:not([hidden]) > img.pic) > label.hold { display: none; }
-
 /* A game's page. */
 .names { margin-top: 14px; }
 .names .cols, .doc .cols { margin-top: 6px; columns: 15ch auto; column-gap: 2ch; }

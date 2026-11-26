@@ -17,11 +17,10 @@ type Game struct {
 	Blurb   string      `json:"blurb"`
 	About   string      `json:"about"`
 	Facts   string      `json:"facts"`
-	Picture string      `json:"picture"`
 	Keys    [][2]string `json:"keys"`
-	// Recording says what the game's recording shows, for anyone who cannot see it. A game
-	// whose recording is pinned needs one; until then Picture describes its sketch.
-	Recording string `json:"recording,omitempty"`
+	// Recording says what the game's recording shows, for anyone who cannot see it. A game is
+	// listed only once a release with its recording is pinned, so every game has one.
+	Recording string `json:"recording"`
 	// Cells is the size the game plays at in its page, columns by rows: 120 by 40 if not given.
 	// A game whose drawing costs more for each cell plays smaller, and so faster.
 	Cells [2]int `json:"cells,omitempty"`
@@ -57,8 +56,8 @@ func Load(path string) ([]Game, error) {
 			return nil, fmt.Errorf("%s: the name %q is used twice", path, g.Name)
 		case !slices.Contains([]string{"1p", "2p", "2p net", "net"}, g.Players):
 			return nil, fmt.Errorf("%s: %s: players is 1p, 2p, 2p net or net, got %q", path, g.Name, g.Players)
-		case g.Blurb == "" || g.About == "" || g.Facts == "" || g.Picture == "" || len(g.Keys) == 0:
-			return nil, fmt.Errorf("%s: %s: a blurb, an about, facts, a picture and keys are all needed", path, g.Name)
+		case g.Blurb == "" || g.About == "" || g.Facts == "" || g.Recording == "" || len(g.Keys) == 0:
+			return nil, fmt.Errorf("%s: %s: a blurb, an about, facts, a recording and keys are all needed", path, g.Name)
 		case g.Cells != [2]int{} && (g.Cells[0] < 80 || g.Cells[0] > 240 || g.Cells[1] < 24 || g.Cells[1] > 80):
 			return nil, fmt.Errorf("%s: %s: cells is columns from 80 to 240 and rows from 24 to 80, got %v", path, g.Name, g.Cells)
 		}

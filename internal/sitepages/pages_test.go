@@ -50,7 +50,6 @@ type page struct {
 	Example  string            // a game to name in the launcher's examples
 	Notes    []plan.Note       // the devlog, newest first
 	Contact  template.HTML     // where the notices say to write
-	Rec      map[string]bool   // the games whose screens show their recording
 	Play     map[string]string // the version of each game that can be played in its page
 	Player   string            // the folder of glonk's player, /play/glonk/VERSION/
 	Man      map[string]string // the section of each program with a manual page on the site
@@ -316,14 +315,6 @@ func pages(t *testing.T) map[string]string {
 	tmpl, err := template.New("").Funcs(template.FuncMap{
 		// The width a drawn name is given in a page: ten units a cell, six cells a letter.
 		"namew": func(name string, more int) int { return (len(name) + more) * 60 },
-		// What the screen template is given: a game, or a pointer to one, and whether its
-		// recording is pinned.
-		"screen": func(g any, rec bool) any {
-			return struct {
-				Game any
-				Rec  bool
-			}{g, rec}
-		},
 	}).ParseGlob(filepath.Join("templates", "*.tmpl"))
 	if err != nil {
 		t.Fatal(err)
@@ -349,9 +340,10 @@ func pages(t *testing.T) map[string]string {
 		t.Fatalf("wanted one version of glonk's player in site/play/glonk (scripts/player.sh keeps it), got %v %v", kept, err)
 	}
 	player := "/play/glonk/" + filepath.Base(kept[0]) + "/"
+	// A game's screens show its recording and nothing else, so a game without one is not listed.
 	for _, g := range list {
-		if rec[g.Name] && g.Recording == "" {
-			t.Fatalf("games.json: %s: its recording is pinned, so it needs a recording: what the recording shows, for anyone who cannot see it", g.Name)
+		if !rec[g.Name] {
+			t.Fatalf("games.json: %s has no recording pinned: list a game once a release with its recording is pinned (scripts/pin.sh)", g.Name)
 		}
 	}
 	man := map[string]string{}
@@ -359,7 +351,7 @@ func pages(t *testing.T) map[string]string {
 		man[m.Name] = m.Section
 	}
 	base := func(title, text, source string) page {
-		return page{Title: title, GoTags: goTags(games.GoModules, source), Describe: describe(title, text, false), Games: sorted, Count: count, Example: list[0].Name, Rec: rec, Play: play, Player: player, Man: man}
+		return page{Title: title, GoTags: goTags(games.GoModules, source), Describe: describe(title, text, false), Games: sorted, Count: count, Example: list[0].Name, Play: play, Player: player, Man: man}
 	}
 
 	out := map[string]string{}

@@ -64,7 +64,6 @@ The listing grows downward and nothing is redesigned. The line under it counts t
 | `site/media/<name>/name.svg` | A game's name, or a tool's, in the letters. |
 | `site/favicon.svg`, `site/favicon.ico`, `site/apple-touch-icon.png`, `site/icon-512.png` | The small mark, for browsers, phones and avatars. |
 | `site/card.png` | The picture beside a link to usr.games: the sign and its line, 1280 by 640. |
-| `site/media/<game>/sketch.svg` | A stand-in picture of a game. See below. |
 
 Draw them again with `make site`.
 
@@ -72,4 +71,4 @@ Draw them again with `make site`.
 |---|---|
 | `site/media/<game>/<game>.gif`, `.png` | A game's recording and its still, from its release: the game playing itself, in its own colours, 1320 by 672, under 3,000,000 bytes, looping. `scripts/pin.sh` brings them. |
 
-**The sketches are placeholders.** A game's screen shows a recording of the game itself. Until a game's release brings one and it is pinned, a small sketch in cells keeps its screen from being empty; the sketch goes when the recording comes.
+**A game's screen shows its recording, and a game is listed only once one is pinned.** The sketches in cells that stood in before went with #10.
