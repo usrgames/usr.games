@@ -180,7 +180,7 @@
   <section>
     <h2>In a match over the net</h2>
     <p>When two people play over the net, their games talk through our relay. It holds a match in memory while it is played: a room, two seats, and the moves on their way from one seat to the other. A move is dropped once it is delivered. A seat that goes quiet for 45 seconds is cleared, and a room nobody joins ends after 10 minutes.</p>
-    <p>The relay asks for no name, writes nothing to disk and keeps no log of who played. DigitalOcean hosts it, and sees the addresses that connect to it.</p>
+    <p>The relay asks for no name, writes nothing to disk and keeps no log of who played. So that nobody can take every room, it counts, in memory, the rooms each address has open and the codes it tried in the last 10 minutes that found no room. DigitalOcean hosts it and Cloudflare carries its traffic: both see the addresses that connect to it.</p>
     <p class="dim note">Outside a match over the net, the games make no network connections at all.</p>
   </section>
   <section>
