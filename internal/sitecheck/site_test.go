@@ -178,6 +178,10 @@ func TestCloudflareServesTheSiteFolderWithItsNotFoundPage(t *testing.T) {
 		Previews    map[string]any `json:"previews"`
 		WorkersDev  *bool          `json:"workers_dev"`
 		PreviewURLs *bool          `json:"preview_urls"`
+		Routes      []struct {
+			Pattern      string `json:"pattern"`
+			CustomDomain bool   `json:"custom_domain"`
+		} `json:"routes"`
 	}
 	if err := json.Unmarshal([]byte(read(t, "wrangler.jsonc")), &cfg); err != nil {
 		t.Fatalf("wanted wrangler.jsonc to be plain JSON, got %v", err)
@@ -191,10 +195,14 @@ func TestCloudflareServesTheSiteFolderWithItsNotFoundPage(t *testing.T) {
 	if cfg.Previews == nil {
 		t.Errorf(`wanted a "previews" block (it may be empty), without which Cloudflare's builds of pull request branches fail`)
 	}
-	// With no domain attached, Cloudflare would serve the Worker at an address of its own, under
-	// the account's name: the site would be public before it opens. Previews are a separate switch.
+	// The site is served at usr.games, its custom domain, which each deploy keeps attached, and
+	// nowhere else: on its own address Cloudflare would serve it under the account's name, so
+	// that stays off. Previews are a separate switch.
+	if len(cfg.Routes) != 1 || cfg.Routes[0].Pattern != "usr.games" || !cfg.Routes[0].CustomDomain {
+		t.Errorf(`wanted the one route {"pattern": "usr.games", "custom_domain": true}, got %+v`, cfg.Routes)
+	}
 	if cfg.WorkersDev == nil || *cfg.WorkersDev {
-		t.Errorf(`wanted "workers_dev": false, so the site has no address until its domain is attached`)
+		t.Errorf(`wanted "workers_dev": false, so the site has no address under the account's name`)
 	}
 	if cfg.PreviewURLs == nil || !*cfg.PreviewURLs {
 		t.Errorf(`wanted "preview_urls": true, so each pull request still gets a preview`)
