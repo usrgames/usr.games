@@ -32,6 +32,6 @@
 </html>
 {{end}}
 
-{{define "screen"}}{{if .Rec}}<div class="screen"><img class="pic" src="/media/{{.Game.Name}}/{{.Game.Name}}.png" alt="{{.Game.Recording}}" width="660" height="336"><img class="pic moving" src="/media/{{.Game.Name}}/{{.Game.Name}}.gif" alt="" width="660" height="336" loading="lazy"></div>{{else}}<img class="pic" src="/media/{{.Game.Name}}/sketch.svg" alt="{{.Game.Picture}}" width="660" height="340">{{end}}{{end}}
+{{define "screen"}}<div class="screen"><img class="pic" src="/media/{{.Name}}/{{.Name}}.png" alt="{{.Recording}}" width="660" height="336"><img class="pic moving" src="/media/{{.Name}}/{{.Name}}.gif" alt="" width="660" height="336" loading="lazy"></div>{{end}}
 
 {{define "games"}}<p class="cols">{{range .Games}}<a href="/{{.Name}}"{{if and $.Game (eq .Name $.Game.Name)}} class="rev" aria-current="page"{{end}}>{{.Name}}(6)</a>{{end}}</p>{{end}}
