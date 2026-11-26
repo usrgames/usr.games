@@ -98,6 +98,11 @@
       if ((size * dpr) % 2) size -= 1;
       const spacing = Math.max(0, (size * dpr) / 2 - Math.floor(0.4 * size * dpr));
       await document.fonts.load(`${size}px VT323`);
+      // oto plays the games' sound; its audio worklet is a blob: script the policy refuses, and
+      // without audioWorklet it plays through a ScriptProcessorNode, which needs none (#31).
+      // shortcut: that node is deprecated and runs on the page's main thread; if a browser drops
+      // it, oto must take its worklet from a file of the site.
+      delete globalThis.BaseAudioContext?.prototype.audioWorklet;
       const running = await glonkPlay(box, {
         game, cols, rows,
         terminal: {
